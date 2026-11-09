@@ -1,0 +1,1546 @@
+<!doctype html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Gangfræði</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=STIX+Two+Text:ital,wght@0,400;1,400&display=swap">
+<style>
+/* Layout: graph-paper header, three tabs (Fræðin / Reiknivélar / Formúlublað); calculators = inputs left, worked steps right, live motion viewer below */
+:root{
+  --bg:#ffffff; --paper:#ffffff; --ink:#14212a; --muted:#56656f; --rule:#d5dde0; --grid:#e6ebee; --zero:#8a9aa3;
+  --accent:#1d5bb8; --accent-ink:#ffffff; --accent-soft:#dde7f5; --accent2:#c4470f; --accent2-soft:#f7e3d8;
+  --ok:#2a7a3b; --warn:#9a5b00;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --f-math:'STIX Two Text','Cambria Math','Times New Roman',serif;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+p{margin:0}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.top{border-bottom:1px solid var(--rule);background:var(--paper);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.top .wrap{padding-block:8px 0;display:flex;align-items:flex-end;justify-content:space-between;gap:4px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;padding-bottom:8px}
+.top h1{font-size:1.6rem;font-weight:800;letter-spacing:-.01em}
+.top h1 .slope{color:var(--accent)}
+.menu-btn{appearance:none;border:none;background:none;cursor:pointer;width:44px;height:44px;display:grid;place-items:center;border-radius:8px;color:var(--ink)}
+.menu-btn:hover{background:var(--accent-soft)}
+.tabs{display:flex;gap:4px}
+.tab{appearance:none;border:none;background:none;padding:10px 16px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+.tab:not([aria-selected="true"]):hover{color:var(--ink)}
+
+.scrim{position:fixed;inset:0;background:rgba(20,33,42,.35);z-index:29}
+.drawer{position:fixed;inset:0 auto 0 0;width:min(320px,86vw);background:var(--paper);border-right:1px solid var(--rule);z-index:30;overflow-y:auto;transform:translateX(-105%);visibility:hidden;transition:transform .2s,visibility .2s;padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;display:grid;gap:4px;align-content:start}
+.drawer.open{transform:none;visibility:visible}
+.drawer h2{font-size:1.4rem;padding:6px 10px 10px}
+.drawer a{text-decoration:none;color:var(--ink);padding:10px;border-radius:8px;display:flex;gap:12px}
+.drawer a b{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums;min-width:2em}
+.drawer a:hover{background:var(--accent-soft)}
+.drawer a[aria-current="page"]{background:var(--accent-soft);font-weight:600}
+.drawer hr{border:none;border-top:1px solid var(--rule);width:100%;margin:8px 0}
+
+.home{display:grid;gap:36px;max-width:900px}
+.home h2{font-size:1.7rem}
+.block{display:grid;gap:14px}
+.sumlist{display:grid;gap:14px}
+.sumlist p{max-width:72ch}
+.sumlist a{font-weight:600;text-decoration:none}
+.sumlist a:hover{text-decoration:underline}
+.trikks{border-top:3px solid var(--accent2);padding-top:20px}
+.trikks h2{font-size:2.2rem;font-weight:800;color:var(--accent2)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px 32px}
+.tgrid div{display:grid;gap:3px;align-content:start;min-width:0}
+.tgrid b{font-family:var(--f-display);font-size:1.02rem}
+.pager{display:flex;justify-content:space-between;gap:12px;max-width:760px;border-top:1px solid var(--rule);padding-top:16px;flex-wrap:wrap}
+.pager a{font-weight:600;text-decoration:none}
+.pager a:hover{text-decoration:underline}
+
+main .wrap{padding-block:32px 64px}
+.panel[hidden]{display:none}
+
+/* math */
+.math{font-family:var(--f-math);font-size:1.12em;white-space:nowrap}
+.math var,var{font-family:var(--f-math);font-style:italic}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .15em;line-height:1.25}
+.frac>span:first-child{border-bottom:1.4px solid currentColor;padding:0 .25em .05em}
+.frac>span:last-child{padding:.05em .25em 0}
+sub,sup{font-size:.7em;line-height:0}
+
+/* theory */
+.sec{display:grid;gap:16px;padding-bottom:44px;margin-bottom:44px;border-bottom:1px solid var(--rule);max-width:760px}
+.sec,.sec:last-child{border-bottom:none;padding-bottom:0;margin-bottom:24px}
+.sec[hidden]{display:none}
+.sec>h2{font-size:1.9rem;display:flex;gap:14px;align-items:baseline}
+.sec>h2 .no{font-size:1rem;color:var(--accent);font-variant-numeric:tabular-nums;font-family:var(--f-body);font-weight:600}
+.sec h3{font-size:1.2rem;margin-top:8px}
+.sec p,.sec li{max-width:68ch}
+.sec ul,.sec ol{margin:0;padding-left:1.3em;display:grid;gap:6px}
+.term{font-weight:600}
+.en{color:var(--muted);font-style:italic}
+
+.formula{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:18px 20px;display:grid;gap:8px}
+.formula .big{font-family:var(--f-math);font-size:1.7rem;line-height:1.3}
+.formula .cap{color:var(--muted);font-size:.9rem}
+.formula-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.goto{justify-self:start;appearance:none;border:none;background:none;color:var(--accent);font-weight:600;cursor:pointer;padding:0;font-size:.9rem}
+.goto:hover{text-decoration:underline}
+
+.ex{border-left:3px solid var(--accent);padding:4px 0 4px 18px;display:grid;gap:8px}
+.ex .lbl{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.ex .calc-line{font-family:var(--f-math);font-size:1.08rem;overflow-x:auto}
+.ans{background:var(--accent-soft);padding:1px 6px;border-radius:4px;font-weight:600}
+
+.myth{background:var(--accent2-soft);border-radius:10px;padding:14px 18px;display:grid;gap:8px}
+.myth h4{font-size:1rem;color:var(--accent2)}
+.myth ul{padding-left:1.1em}
+
+.try{border:1px solid var(--rule);border-radius:10px;padding:16px 18px;display:grid;gap:12px}
+.try ol{gap:14px!important}
+.try .a{display:block;color:var(--ok);font-weight:500}
+.try .a[hidden]{display:none}
+.reveal{display:block;appearance:none;border:none;background:none;padding:2px 0;color:var(--accent);font-weight:600;font-size:.9rem;cursor:pointer}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.sign{font-family:var(--f-math);font-size:1.15rem;font-weight:600}
+.up{color:var(--ok)} .down{color:var(--accent2)}
+
+.steps6{list-style:none;padding:0!important;counter-reset:s;display:grid;gap:10px!important}
+.steps6 li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+.steps6 li::before{content:counter(s);width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:600;font-size:.9rem}
+
+.eqcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.eqcard{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:12px 14px;display:grid;gap:6px;transition:border-color .2s,background .2s}
+.eqcard .n{font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px}
+.eqcard .n span{color:var(--accent2);text-transform:none;letter-spacing:0}
+.eqcard .math{font-size:1.3rem}
+.eqcard.used{border-color:var(--accent);background:var(--accent-soft)}
+
+.numline{width:100%;max-width:560px;height:auto}
+.numline .ax{stroke:var(--zero);stroke-width:1.5}
+.numline .tk{stroke:var(--zero)}
+.numline text{fill:var(--muted);font-size:12px;font-family:var(--f-body)}
+.numline .p1{stroke:var(--accent);stroke-width:2.5;fill:none}
+.numline .p2{stroke:var(--accent2);stroke-width:2.5;fill:none}
+.numline .ah1{fill:var(--accent)} .numline .ah2{fill:var(--accent2)}
+.numline .lab1{fill:var(--accent);font-weight:600} .numline .lab2{fill:var(--accent2);font-weight:600}
+.numline .dot{fill:var(--ink)}
+
+/* calculators */
+.calcs{display:grid;grid-template-columns:220px minmax(0,1fr);gap:32px;align-items:start}
+.calcnav{display:grid;gap:4px}
+.calcnav button{appearance:none;text-align:left;border:1px solid transparent;background:none;padding:10px 12px;border-radius:8px;cursor:pointer;display:grid;gap:1px}
+.calcnav button b{font-weight:600}
+.calcnav button small{color:var(--muted);font-size:.8rem}
+.calcnav button:hover{background:var(--paper)}
+.calcnav button[aria-selected="true"]{background:var(--paper);border-color:var(--rule);box-shadow:inset 3px 0 0 var(--accent)}
+.conv{margin-top:16px;border-top:1px solid var(--rule);padding-top:16px;display:grid;gap:8px}
+.conv h4{font-size:.95rem}
+.conv .fld-row input{width:100%}
+.conv p{font-size:.8rem;color:var(--muted)}
+
+.calc{display:grid;gap:22px}
+.calc[hidden]{display:none}
+.calc-h{display:grid;gap:6px}
+.calc-h h2{font-size:1.8rem}
+.calc-h p{color:var(--muted);max-width:68ch}
+.calc-grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:18px;display:grid;gap:14px;min-width:0}
+.fld{display:grid;gap:4px}
+.fld-l{font-size:.88rem;font-weight:600;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.fld-l .math{font-weight:400}
+.fld-row{display:flex;gap:6px}
+.fld-row input{flex:1;min-width:0}
+input[type=text]{border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:9px 11px;font-variant-numeric:tabular-nums;width:100%}
+input[type=text]:disabled{background:transparent;border-style:dashed;color:var(--muted)}
+input[type=text].bad{border-color:var(--accent2)}
+select{border:1px solid var(--rule);background:var(--bg);border-radius:8px;padding:9px 8px}
+.unit{display:grid;place-items:center;min-width:56px;padding:0 8px;border:1px solid var(--rule);border-radius:8px;color:var(--muted);font-size:.9rem;background:var(--paper)}
+.badge{font-size:.72rem;font-weight:600;padding:1px 8px;border-radius:999px;letter-spacing:.02em}
+.badge.k{background:var(--accent-soft);color:var(--accent)}
+.badge.u{background:var(--grid);color:var(--muted)}
+.badge.c{background:var(--accent2-soft);color:var(--accent2)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:9px;padding:3px;gap:3px;background:var(--bg)}
+.seg button{flex:1;appearance:none;border:none;background:none;border-radius:6px;padding:7px 6px;cursor:pointer;font-weight:600;color:var(--muted);font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.presets span{font-size:.8rem;color:var(--muted);width:100%}
+.chip{appearance:none;border:1px solid var(--rule);background:var(--bg);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.85rem}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent)}
+
+.result{display:grid;gap:4px}
+.result .k{font-size:.8rem;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.result .v{font-family:var(--f-display);font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.result .v small{font-size:1rem;font-weight:600;color:var(--muted);font-family:var(--f-body)}
+.result .alt{color:var(--muted);font-size:.92rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{border:1px solid var(--rule);border-radius:10px;padding:10px 12px;display:grid;gap:2px;background:var(--bg)}
+.stat .k{font-size:.75rem;color:var(--muted);font-weight:600}
+.stat .v{font-family:var(--f-display);font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:.8rem;color:var(--muted);font-family:var(--f-body);font-weight:500}
+.stat.hl{border-color:var(--accent);background:var(--accent-soft)}
+
+.wsteps{list-style:none;margin:0;padding:0;display:grid;gap:12px;counter-reset:w}
+.wsteps li{counter-increment:w;display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px}
+.wsteps li::before{content:counter(w);width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-size:.78rem;font-weight:600;margin-top:2px}
+.wsteps .t{font-weight:600;font-size:.92rem}
+.wsteps .m{font-family:var(--f-math);font-size:1.08rem;overflow-x:auto;white-space:nowrap;padding-bottom:2px}
+.wsteps .why{color:var(--muted);font-size:.88rem}
+.msg{padding:12px 14px;border-radius:10px;background:var(--grid);color:var(--ink);font-size:.95rem}
+.msg.err{background:var(--accent2-soft);color:var(--accent2)}
+.ok{color:var(--ok);font-weight:600}
+
+/* viewer */
+.viewer{display:grid;gap:12px}
+.v-stage{display:grid;gap:12px}
+.v-stage.is-vert{grid-template-columns:150px minmax(0,1fr);align-items:start}
+.v-track{width:100%;height:auto;background:var(--paper);border:1px solid var(--rule);border-radius:12px}
+.v-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;min-width:0}
+.v-charts figure{margin:0;background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:10px 10px 8px;display:grid;gap:4px;min-width:0}
+.v-charts figcaption{font-weight:600;font-size:.9rem;padding-left:4px}
+.v-charts figcaption span{color:var(--muted);font-weight:400}
+.v-charts svg{width:100%;height:auto;touch-action:none;cursor:crosshair;display:block}
+.v-note{font-size:.78rem;color:var(--muted);padding-left:4px}
+.v-ctrl{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.v-ctrl input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.v-read{font-variant-numeric:tabular-nums;font-size:.9rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.v-read b{color:var(--ink);font-weight:600}
+
+svg .c-grid{stroke:var(--grid);stroke-width:1}
+svg .c-zero{stroke:var(--zero);stroke-width:1.2}
+svg .c-tick{fill:var(--muted);font-size:10.5px;font-family:var(--f-body)}
+svg .c-axt{fill:var(--muted);font-size:10.5px;font-family:var(--f-body);font-style:italic}
+svg .c-line{stroke:var(--accent);stroke-width:2.2;fill:none;stroke-linejoin:round}
+svg .c-pos{fill:var(--accent);fill-opacity:.16}
+svg .c-neg{fill:var(--accent2);fill-opacity:.22}
+svg .c-brk{stroke:var(--zero);stroke-width:1;stroke-dasharray:3 4}
+svg .c-curl{stroke:var(--ink);stroke-width:1;stroke-opacity:.45}
+svg .c-curd{fill:var(--accent);stroke:var(--paper);stroke-width:2}
+svg .c-curt{fill:var(--ink);font-size:11px;font-family:var(--f-body);font-weight:600;font-variant-numeric:tabular-nums}
+svg .c-curbg{fill:var(--paper);fill-opacity:.9}
+svg .t-line{stroke:var(--zero);stroke-width:2}
+svg .t-ground{fill:var(--grid)}
+svg .t-obj{fill:var(--accent);stroke:var(--paper);stroke-width:2.5}
+svg .t-v{stroke:var(--accent);stroke-width:2.5;fill:var(--accent)}
+svg .t-a{stroke:var(--accent2);stroke-width:2.5;fill:var(--accent2)}
+svg .t-vl{fill:var(--accent);font:italic 600 13px var(--f-math)}
+svg .t-al{fill:var(--accent2);font:italic 600 13px var(--f-math)}
+svg .t-start{fill:var(--muted)}
+
+/* stopping bars */
+.bars{display:grid;gap:10px}
+.bar-row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:10px;align-items:center;font-size:.88rem}
+.bar-row .nm{color:var(--muted)}
+.bar-row.sel .nm{color:var(--ink);font-weight:600}
+.bar{display:flex;height:26px;gap:2px;align-items:stretch}
+.bar i{display:block;border-radius:4px;min-width:2px}
+.bar .r{background:var(--accent)} .bar .b{background:var(--accent2)}
+.bar-row:not(.sel) .bar i{opacity:.45}
+.bar em{font-style:normal;font-variant-numeric:tabular-nums;padding-left:8px;align-self:center;white-space:nowrap;font-weight:600}
+.legend{display:flex;gap:16px;font-size:.82rem;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.legend .r{background:var(--accent)} .legend .b{background:var(--accent2)}
+.chart-solo svg{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair}
+
+/* segments table */
+.segs td,.segs th{padding:6px 8px}
+.segs input[type=text]{padding:6px 8px}
+.segs .del{appearance:none;border:none;background:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:4px 8px;border-radius:6px}
+.segs .del:hover{color:var(--accent2);background:var(--accent2-soft)}
+
+/* sheet */
+.sheet{display:grid;gap:28px;max-width:900px}
+.sheet h2{font-size:1.6rem}
+.check{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.gloss{columns:2 280px;column-gap:32px;font-size:.93rem}
+.gloss div{break-inside:avoid;display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dotted var(--rule)}
+.gloss span:last-child{color:var(--muted);font-style:italic;text-align:right}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--rule)}
+footer .wrap{padding-block:20px 32px}
+
+@media (max-width:900px){
+  .calcs{grid-template-columns:minmax(0,1fr);gap:20px}
+  .calcnav{display:flex;flex-wrap:wrap;gap:6px}
+  .calcnav button{border-color:var(--rule);background:var(--paper)}
+  .calcnav button small{display:none}
+  .conv{width:100%}
+  .calc-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .v-stage.is-vert{grid-template-columns:96px minmax(0,1fr)}
+  .bar-row{grid-template-columns:78px minmax(0,1fr)}
+  .formula .big{font-size:1.4rem}
+  .tab{padding:9px 12px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Opna valmynd" aria-expanded="false" aria-controls="drawer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <h1>Gangfræði<span class="slope">.</span></h1>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Forsíða">
+      <button class="tab" role="tab" id="tab-yfirlit" aria-controls="p-yfirlit" aria-selected="true" data-tab="yfirlit">Yfirlit</button>
+      <button class="tab" role="tab" id="tab-reiknivelar" aria-controls="p-reiknivelar" aria-selected="false" data-tab="reiknivelar">Reiknivél</button>
+    </nav>
+  </div>
+</header>
+
+<div class="scrim" id="scrim" hidden></div>
+<nav class="drawer" id="drawer" aria-label="Valmynd">
+  <h2>Kafli 2</h2>
+  <a href="#s21" data-sec="s21"><b>2.1</b><span>Færsla</span></a>
+  <a href="#s22" data-sec="s22"><b>2.2</b><span>Vigrar, stigstærðir og hnitakerfi</span></a>
+  <a href="#s23" data-sec="s23"><b>2.3</b><span>Tími, hraði og ferð</span></a>
+  <a href="#s24" data-sec="s24"><b>2.4</b><span>Hröðun</span></a>
+  <a href="#s25" data-sec="s25"><b>2.5</b><span>Hreyfijöfnur fyrir fasta hröðun</span></a>
+  <a href="#s26" data-sec="s26"><b>2.6</b><span>Lausnaaðferð</span></a>
+  <a href="#s27" data-sec="s27"><b>2.7</b><span>Frjálst fall</span></a>
+  <a href="#s28" data-sec="s28"><b>2.8</b><span>Gröf af hreyfingu</span></a>
+  <hr>
+  <a href="#formulur" data-page="formulur"><span>Gátlisti og orðalisti</span></a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<!-- ================= YFIRLIT ================= -->
+<section class="panel" id="p-yfirlit" role="tabpanel" aria-labelledby="tab-yfirlit">
+ <div class="home">
+  <div class="block">
+   <h2>Samantekt á kafla 2</h2>
+   <div class="sumlist">
+    <p><a href="#s21" data-sec="s21">2.1 Færsla.</a> Gangfræði lýsir hreyfingu án þess að spyrja um orsakir hennar. Færsla er lokastaða mínus upphafsstaða og hefur stefnu. Farin vegalengd er öll leiðin og er aldrei neikvæð.</p>
+    <p><a href="#s22" data-sec="s22">2.2 Vigrar og hnitakerfi.</a> Vigrar hafa stærð og stefnu en stigstærðir bara stærð. Í einni vídd táknar formerkið stefnu. Veldu núllpunkt og jákvæða stefnu og haltu þig við það í öllu dæminu.</p>
+    <p><a href="#s23" data-sec="s23">2.3 Tími, hraði og ferð.</a> Meðalhraði er færsla deilt með tíma og meðalferð er farin vegalengd deilt með tíma. Ferð er stærð hraðans, án stefnu. Þetta tvennt er bara jafnstórt ef hluturinn snýr aldrei við.</p>
+    <p><a href="#s24" data-sec="s24">2.4 Hröðun.</a> Hröðun er breyting á hraða á tímaeiningu. Ef hraði og hröðun hafa sama formerki eykst ferðin, en annars minnkar hún.</p>
+    <p><a href="#s25" data-sec="s25">2.5 Hreyfijöfnur.</a> Fjórar jöfnur tengja saman færslu, upphafshraða, lokahraða, hröðun og tíma. Þær gilda aðeins þegar hröðunin er föst. Hver jafna sleppir einni af stærðunum fimm.</p>
+    <p><a href="#s26" data-sec="s26">2.6 Lausnaaðferð.</a> Teiknaðu mynd, skráðu þekktar stærðir í SI-einingum, skráðu hvað er spurt um, veldu jöfnu, leystu með táknum og athugaðu svarið. Ef hröðunin breytist á miðri leið er hreyfingunni skipt í hluta.</p>
+    <p><a href="#s27" data-sec="s27">2.7 Frjálst fall.</a> Þegar aðeins þyngdarkrafturinn verkar er a = −g = −9,80 m/s² allan tímann (upp er jákvætt), líka efst á ferlinum. Allir hlutir falla eins óháð massa.</p>
+    <p><a href="#s28" data-sec="s28">2.8 Gröf.</a> Halli x–t-grafs er hraði og halli v–t-grafs er hröðun. Flatarmálið undir v–t-grafi er færslan og flatarmálið undir a–t-grafi er hraðabreytingin.</p>
+   </div>
+  </div>
+
+  <div class="block">
+   <h2>Allar formúlurnar</h2>
+   <div class="tbl-wrap"><table>
+     <thead><tr><th>Formúla</th><th>Hvað og hvenær</th></tr></thead>
+     <tbody>
+       <tr><td class="math"><var>Δx</var> = <var>x</var><sub>f</sub> − <var>x</var><sub>0</sub></td><td>Færsla</td></tr>
+       <tr><td class="math"><var>v̄</var> = <var>Δx</var> / <var>Δt</var></td><td>Meðalhraði</td></tr>
+       <tr><td class="math">meðalferð = farin vegalengd / <var>Δt</var></td><td>Meðalferð</td></tr>
+       <tr><td class="math"><var>ā</var> = <var>Δv</var> / <var>Δt</var> = (<var>v</var> − <var>v</var><sub>0</sub>) / (<var>t</var> − <var>t</var><sub>0</sub>)</td><td>Meðalhröðun</td></tr>
+       <tr><td class="math"><var>x</var> = <var>x</var><sub>0</sub> + <var>vt</var></td><td>Fastur hraði (<var>a</var> = 0)</td></tr>
+       <tr><td class="math"><var>v</var> = <var>v</var><sub>0</sub> + <var>at</var></td><td>Jafna 1: föst hröðun, án <var>Δx</var></td></tr>
+       <tr><td class="math"><var>x</var> = <var>x</var><sub>0</sub> + <var>v</var><sub>0</sub><var>t</var> + ½<var>at</var>²</td><td>Jafna 2: föst hröðun, án <var>v</var></td></tr>
+       <tr><td class="math"><var>v</var>² = <var>v</var><sub>0</sub>² + 2<var>a</var>(<var>x</var> − <var>x</var><sub>0</sub>)</td><td>Jafna 3: föst hröðun, án <var>t</var></td></tr>
+       <tr><td class="math"><var>x</var> = <var>x</var><sub>0</sub> + ½(<var>v</var><sub>0</sub> + <var>v</var>)<var>t</var></td><td>Jafna 4: föst hröðun, án <var>a</var></td></tr>
+       <tr><td class="math"><var>t</var> = (<var>v</var> − <var>v</var><sub>0</sub>) / <var>a</var></td><td>Tími, einangraður úr jöfnu 1</td></tr>
+       <tr><td class="math"><var>x</var> − <var>x</var><sub>0</sub> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2<var>a</var></td><td>Færsla, einangruð úr jöfnu 3</td></tr>
+       <tr><td class="math"><var>a</var> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2(<var>x</var> − <var>x</var><sub>0</sub>)</td><td>Hröðun, einangruð úr jöfnu 3</td></tr>
+       <tr><td class="math"><var>t</var> = √(2(<var>x</var> − <var>x</var><sub>0</sub>) / <var>a</var>)</td><td>Tími úr jöfnu 2 þegar <var>v</var><sub>0</sub> = 0</td></tr>
+       <tr><td class="math"><var>v</var> = ±√(<var>v</var><sub>0</sub>² + 2<var>a</var>(<var>x</var> − <var>x</var><sub>0</sub>))</td><td>Hraði úr jöfnu 3; formerkið fer eftir stefnu</td></tr>
+       <tr><td class="math"><var>a</var> = −<var>g</var>, <var>g</var> = 9,80 m/s²</td><td>Frjálst fall (upp er jákvætt)</td></tr>
+       <tr><td class="math"><var>v</var> = <var>v</var><sub>0</sub> − <var>gt</var></td><td>Frjálst fall, án <var>Δy</var></td></tr>
+       <tr><td class="math"><var>y</var> = <var>y</var><sub>0</sub> + <var>v</var><sub>0</sub><var>t</var> − ½<var>gt</var>²</td><td>Frjálst fall, án <var>v</var></td></tr>
+       <tr><td class="math"><var>v</var>² = <var>v</var><sub>0</sub>² − 2<var>g</var>(<var>y</var> − <var>y</var><sub>0</sub>)</td><td>Frjálst fall, án <var>t</var></td></tr>
+       <tr><td class="math"><var>t</var> = (−<var>B</var> ± √(<var>B</var>² − 4<var>AC</var>)) / 2<var>A</var></td><td>Lausnarformúla, þegar <var>t</var> kemur fyrir í öðru veldi</td></tr>
+       <tr><td class="math"><var>t</var> = √(2<var>d</var> / <var>g</var>)</td><td>Viðbragðstími mældur með reglustiku</td></tr>
+       <tr><td class="math"><var>Δx</var> = <var>v</var><sub>0</sub><var>t</var><sub>1</sub> + (0 − <var>v</var><sub>0</sub>²) / 2<var>a</var><sub>2</sub></td><td>Stöðvunarvegalengd: viðbragð + hemlun</td></tr>
+       <tr><td>1 m/s = 3,6 km/klst</td><td>Umreikningur</td></tr>
+     </tbody>
+   </table></div>
+  </div>
+
+  <div class="block trikks">
+   <h2>TRIKKS!</h2>
+   <div class="tbl-wrap"><table>
+     <thead><tr><th>Ef stendur í dæminu</th><th>Þá veistu</th></tr></thead>
+     <tbody>
+       <tr><td>„úr kyrrstöðu“, „fer af stað“, „sleppt úr kyrrstöðu“</td><td class="math"><var>v</var><sub>0</sub> = 0</td></tr>
+       <tr><td>„stöðvast“, „nemur staðar“</td><td class="math"><var>v</var> = 0</td></tr>
+       <tr><td>„fastur hraði“</td><td class="math"><var>a</var> = 0</td></tr>
+       <tr><td>„frjálst fall“ (upp er jákvætt)</td><td class="math"><var>a</var> = −<var>g</var></td></tr>
+       <tr><td>„efst á ferlinum“, „mesta hæð“</td><td class="math"><var>v</var> = 0</td></tr>
+       <tr><td>„lendir aftur í sömu hæð“</td><td class="math"><var>y</var> = <var>y</var><sub>0</sub></td></tr>
+     </tbody>
+   </table></div>
+   <div class="tgrid">
+     <div><b>Finndu réttu jöfnuna</b><p>Hvaða stærð er hvorki gefin né spurt um? Veldu jöfnuna sem inniheldur hana ekki.</p></div>
+     <div><b>Fljót umbreyting</b><p>Deildu með 3,6 til að fara úr km/klst í m/s og margfaldaðu með 3,6 til baka.</p></div>
+     <div><b>SI fyrst</b><p>Breyttu öllu í m, s og m/s áður en þú reiknar. Ekki blanda saman km/klst og m/s.</p></div>
+     <div><b>Formerkjareglan</b><p>Sama formerki á <var>v</var> og <var>a</var>: ferðin eykst. Gagnstæð formerki: ferðin minnkar.</p></div>
+     <div><b>Hemlun er neikvæð</b><p>Ef bíll ekur í jákvæða stefnu og hemlar þarf <var>a</var> að vera neikvætt í jöfnunum.</p></div>
+     <div><b>Vasareiknirinn og mínus</b><p>(−7,0)² = 49 en −7,0² = −49. Settu sviga utan um neikvæðar tölur.</p></div>
+     <div><b>Meðaltal hraða</b><p>½(<var>v</var><sub>0</sub> + <var>v</var>) er bara meðalhraði við fasta hröðun. Ef ekið er jafnlangt á tveimur hröðum er hann ekki meðaltalið.</p></div>
+     <div><b>Tveir hlutar</b><p>Breytist hröðunin á miðri leið? Skiptu dæminu. Lokagildi fyrri hlutans verða upphafsgildi þess seinni.</p></div>
+     <div><b>Efst á ferlinum</b><p>Þar er <var>v</var> = 0 en hröðunin er samt −9,80 m/s². Hún er −<var>g</var> alla leiðina.</p></div>
+     <div><b>Samhverfa</b><p>Lendi hluturinn í sömu hæð er hann jafnlengi upp og niður. Reiknaðu tímann upp og tvöfaldaðu.</p></div>
+     <div><b>Sleppt úr farartæki</b><p>Hlutur sem er sleppt úr loftbelg á hreyfingu hefur í byrjun sama hraða og loftbelgurinn.</p></div>
+     <div><b>Kvaðratrót hefur tvær lausnir</b><p>Veldu formerkið út frá aðstæðum. Neikvæður tími á yfirleitt ekki við.</p></div>
+     <div><b>Lestu gröfin</b><p>Halli <var>x</var>–<var>t</var> er hraði, halli <var>v</var>–<var>t</var> er hröðun og flatarmál undir <var>v</var>–<var>t</var> er færsla.</p></div>
+     <div><b>Farin vegalengd úr grafi</b><p>Leggðu flatarmálin undir <var>v</var>–<var>t</var> saman án formerkja. Með formerkjum færðu færsluna.</p></div>
+     <div><b>Haltu aukastöfum</b><p>Námundaðu aðeins lokasvarið, ekki milliskrefin.</p></div>
+     <div><b>Athugaðu svarið</b><p>Er stærðin skynsamleg? Eru einingarnar réttar? Er formerkið rétt?</p></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- ================= UNDIRKAFLAR ================= -->
+<section class="panel" id="p-fraedi" hidden>
+ <div class="theory">
+  <div>
+
+  <!-- 2.1 -->
+  <article class="sec" id="s21">
+    <h2><span class="no">2.1</span>Færsla</h2>
+    <p>Gangfræði <span class="en">(kinematics)</span> lýsir hreyfingu: hvar hlutur er, hve hratt hann fer og hvernig hraðinn breytist. Hún spyr ekki <em>hvers vegna</em> hann hreyfist; það kemur með kröftum í kafla 4.</p>
+    <p><span class="term">Staða</span> <var>x</var> er alltaf mæld frá völdum núllpunkti. <span class="term">Færsla</span> er breyting á stöðu:</p>
+    <div class="formula">
+      <div class="big"><var>Δx</var> = <var>x</var><sub>f</sub> − <var>x</var><sub>0</sub></div>
+      <div class="cap">Lokastaða mínus upphafsstaða. Eining: m. Færslan hefur stefnu sem er táknuð með formerki: + eða −.</div>
+    </div>
+    <p><span class="term">Farin vegalengd</span> er öll leiðin sem var farin. Hún er aldrei neikvæð. <span class="term">Vegalengd</span> er í bókinni stærð færslunnar, <span class="math">|<var>Δx</var>|</span>. Færslan fer bara eftir upphafs- og lokastöðu, ekki leiðinni á milli.</p>
+
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.1</div>
+      <p>Nemandi stendur við <span class="math"><var>x</var><sub>0</sub> = 2 m</span>, gengur að skápnum við 9 m, snýr við og stoppar hjá vini við 5 m.</p>
+      <svg class="numline" viewBox="0 0 560 120" role="img" aria-label="Talnalína: frá 2 m að 9 m og til baka að 5 m">
+        <line class="ax" x1="20" y1="90" x2="550" y2="90"/>
+        <g id="nl-ticks"></g>
+        <path class="p1" d="M140 50 H478"/><polygon class="ah1" points="490,50 478,44 478,56"/>
+        <text class="lab1" x="315" y="42" text-anchor="middle">+7 m</text>
+        <path class="p2" d="M490 70 H302"/><polygon class="ah2" points="290,70 302,64 302,76"/>
+        <text class="lab2" x="395" y="66" text-anchor="middle">−4 m</text>
+        <circle class="dot" cx="140" cy="90" r="5"/><circle class="dot" cx="290" cy="90" r="5"/>
+        <text x="140" y="20" text-anchor="middle">byrjar (2 m)</text><text x="290" y="20" text-anchor="middle">endar (5 m)</text>
+      </svg>
+      <p class="calc-line"><var>Δx</var> = 5 m − 2 m = <span class="ans">+3 m</span>&nbsp;&nbsp;·&nbsp;&nbsp;farin vegalengd = 7 m + 4 m = <span class="ans">11 m</span></p>
+    </div>
+
+    <div class="myth"><h4>Algengar ranghugmyndir</h4>
+      <ul>
+        <li><b>„Færsla og farin vegalengd eru það sama.“</b> Aðeins ef hluturinn snýr aldrei við. Einn hringur á 400 m braut gefur færsluna 0 m.</li>
+        <li><b>„Neikvæð færsla er villa.“</b> Mínusinn segir bara að hluturinn hafi færst í neikvæða stefnu.</li>
+      </ul>
+    </div>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Lyfta byrjar í 9 m hæð, fer niður á jarðhæð (0 m) og þaðan upp í 6 m. Upp er jákvætt. Færsla og farin vegalengd?<br><span class="a"><var>Δx</var> = −3 m; farin vegalengd 15 m.</span></li>
+      <li>Strætó ekur 4 km austur og sömu leið 4 km vestur.<br><span class="a"><var>Δx</var> = 0; farin vegalengd 8 km.</span></li>
+      <li>Getur farin vegalengd verið minni en stærð færslunnar? Rökstyddu.<br><span class="a">Nei. Hún er alltaf jafnstór eða stærri, því bein lína er stysta leiðin milli upphafs- og lokastaðar.</span></li></ol>
+    </div></details>
+  </article>
+
+  <!-- 2.2 -->
+  <article class="sec" id="s22">
+    <h2><span class="no">2.2</span>Vigrar, stigstærðir og hnitakerfi</h2>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Vigur <span class="en">(vector)</span></th><th>Stigstærð <span class="en">(scalar)</span></th></tr></thead>
+      <tbody>
+        <tr><td>Hefur stærð <b>og</b> stefnu</td><td>Bara tala og eining</td></tr>
+        <tr><td>færsla, hraði, hröðun, kraftur</td><td>tími, farin vegalengd, ferð, massi, orka, hitastig</td></tr>
+        <tr><td>„5 m í austur“</td><td>„5 m“</td></tr>
+      </tbody>
+    </table></div>
+    <p>Til að lýsa hreyfingu þarf <span class="term">hnitakerfi</span>: núllpunkt og jákvæða stefnu. Venjan er að hægri og upp séu jákvæðar stefnur, en þú mátt velja. Það sem skiptir máli er að halda sig við sama val í öllu dæminu.</p>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.2</div>
+      <p>Bíll ekur 300 m í vestur. Ef austur er jákvætt er <span class="math"><var>Δx</var> = −300 m</span>. Ef vestur er jákvætt er <span class="math"><var>Δx</var> = +300 m</span>. Bíllinn gerði það sama í bæði skiptin; aðeins hnitakerfið breyttist.</p>
+    </div>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Vigur eða stigstærð? (a) 25 km/klst í norður (b) 3,0 kg (c) 12 s (d) 9,80 m/s² niður<br><span class="a">(a) vigur (b) stigstærð (c) stigstærð (d) vigur</span></li>
+      <li>Bolta er kastað beint upp (upp jákvætt). Formerki hraðans á uppleið og niðurleið?<br><span class="a">Jákvætt upp, neikvætt niður.</span></li></ol>
+    </div></details>
+  </article>
+
+  <!-- 2.3 -->
+  <article class="sec" id="s23">
+    <h2><span class="no">2.3</span>Tími, hraði og ferð</h2>
+    <div class="formula-row">
+      <div class="formula">
+        <div class="big"><var>v̄</var> = <span class="frac"><span><var>Δx</var></span><span><var>Δt</var></span></span></div>
+        <div class="cap"><b>Meðalhraði</b> = færsla / tími. Vigur, eining m/s.</div>
+        <button class="goto" data-goto="hradi" data-preset="gong">Reikna í reiknivél →</button>
+      </div>
+      <div class="formula">
+        <div class="big">meðalferð = <span class="frac"><span>farin vegal.</span><span><var>Δt</var></span></span></div>
+        <div class="cap"><b>Meðalferð</b> notar farna vegalengd. Stigstærð, aldrei neikvæð.</div>
+        <button class="goto" data-goto="hlutar" data-preset="bolti">Sjá muninn í grafi →</button>
+      </div>
+    </div>
+    <div class="formula">
+      <div class="big" style="font-size:1.3rem">km/klst <span style="color:var(--muted)">÷ 3,6 →</span> m/s &nbsp;&nbsp; m/s <span style="color:var(--muted)">× 3,6 →</span> km/klst</div>
+      <div class="cap">Því 1 m/s · 3600 s = 3600 m = 3,6 km á klukkustund. Dæmi: 90 km/klst ÷ 3,6 = 25 m/s. Tími: 6,00 mín = 360 s = 0,100 klst.</div>
+    </div>
+    <p><span class="term">Augnablikshraði</span> <var>v</var> er hraðinn á einu augnabliki; þegar sagt er bara „hraði“ er átt við hann. <span class="term">Ferð</span> er stærð hraðans, án stefnu, eins og hraðamælir í bíl sýnir.</p>
+
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.3 · Hvalfjarðargöng</div>
+      <p>Göngin eru 5,77 km. Bíll ekur í gegn á 6,00 mín. Meðalhraði?</p>
+      <p class="calc-line"><var>v̄</var> = 5770 m / 360 s = <span class="ans">16,0 m/s</span> = 16,0 · 3,6 km/klst ≈ 57,7 km/klst</p>
+    </div>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.4 · Hlaupari snýr við</div>
+      <p>Hleypur 200 m á 40 s, snýr við og skokkar 100 m til baka á 60 s.</p>
+      <p class="calc-line"><var>v̄</var> = (200 − 100) m / 100 s = <span class="ans">1,0 m/s</span>&nbsp;&nbsp;·&nbsp;&nbsp;meðalferð = 300 m / 100 s = <span class="ans">3,0 m/s</span></p>
+    </div>
+    <div class="myth"><h4>Algengar ranghugmyndir</h4>
+      <ul>
+        <li><b>„Meðalhraði er meðaltal hraðanna.“</b> 10 km á 50 km/klst og 10 km á 100 km/klst tekur 0,20 + 0,10 = 0,30 klst. Meðalferðin er 20 km / 0,30 klst ≈ 67 km/klst, ekki 75. Bíllinn er lengur á minni hraðanum.</li>
+        <li><b>„Hraðamælirinn sýnir meðalhraða.“</b> Hann sýnir augnabliksferð.</li>
+        <li><b>„Meðalhraði og meðalferð eru alltaf jafnstór.“</b> Aðeins ef hluturinn snýr aldrei við.</li>
+      </ul>
+    </div>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Strætó ekur 12 km á 20 mín. Meðalferð í km/klst og m/s?<br><span class="a">36 km/klst = 10 m/s</span></li>
+      <li>Hundur hleypur 30 m frá eiganda sínum og sömu leið til baka á 12 s alls.<br><span class="a">Meðalferð 5,0 m/s; meðalhraði 0 m/s.</span></li></ol>
+    </div></details>
+  </article>
+
+  <!-- 2.4 -->
+  <article class="sec" id="s24">
+    <h2><span class="no">2.4</span>Hröðun</h2>
+    <div class="formula">
+      <div class="big"><var>ā</var> = <span class="frac"><span><var>Δv</var></span><span><var>Δt</var></span></span> = <span class="frac"><span><var>v</var> − <var>v</var><sub>0</sub></span><span><var>t</var> − <var>t</var><sub>0</sub></span></span></div>
+      <div class="cap">Eining m/s². Hröðunin 3 m/s² þýðir að hraðinn breytist um 3 m/s á hverri sekúndu. Hröðun er vigur sem vísar í stefnu <em>hraðabreytingarinnar</em>.</div>
+      <button class="goto" data-goto="jofnur" data-preset="rafbill">Reikna í reiknivél →</button>
+    </div>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.5 · Rafbíll</div>
+      <p>Fer úr kyrrstöðu í 100 km/klst á 4,0 s.</p>
+      <p class="calc-line"><var>v</var> = 100 / 3,6 = 27,78 m/s&nbsp;&nbsp;→&nbsp;&nbsp;<var>ā</var> = (27,78 − 0) m/s / 4,0 s = <span class="ans">6,9 m/s²</span> ≈ 0,7 <var>g</var></p>
+    </div>
+    <h3>Formerki hröðunar</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Hraði <var>v</var></th><th>Hröðun <var>a</var></th><th>Hvað gerist?</th></tr></thead>
+      <tbody>
+        <tr><td class="sign">+</td><td class="sign">+</td><td class="up">ferðin eykst</td></tr>
+        <tr><td class="sign">+</td><td class="sign">−</td><td class="down">ferðin minnkar</td></tr>
+        <tr><td class="sign">−</td><td class="sign">−</td><td class="up">ferðin eykst (í neikvæða stefnu)</td></tr>
+        <tr><td class="sign">−</td><td class="sign">+</td><td class="down">ferðin minnkar</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Regla:</b> sama formerki → ferðin eykst. Gagnstæð formerki → ferðin minnkar.</p>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.6 · Strætó stoppar</div>
+      <p>Strætó á 15 m/s stöðvast á 5,0 s.</p>
+      <p class="calc-line"><var>ā</var> = (0 − 15 m/s) / 5,0 s = <span class="ans">−3,0 m/s²</span>&nbsp;&nbsp;(vísar á móti hraðanum)</p>
+    </div>
+    <div class="myth"><h4>Algengar ranghugmyndir</h4>
+      <ul>
+        <li><b>„Mikill hraði þýðir mikla hröðun.“</b> Flugvél á föstum 250 m/s hefur enga hröðun.</li>
+        <li><b>„Ef hraðinn er núll er hröðunin núll.“</b> Bolti efst á ferlinum er kyrr í augnablik en hröðunin er samt −9,80 m/s².</li>
+      </ul>
+    </div>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Hjólreiðamaður fer úr 2,0 m/s í 8,0 m/s á 3,0 s.<br><span class="a">2,0 m/s²</span></li>
+      <li>Bíll í neikvæða stefnu: hraðinn breytist úr −20 m/s í −5,0 m/s á 5,0 s.<br><span class="a"><var>a</var> = (−5,0 − (−20)) / 5,0 = +3,0 m/s²; ferðin minnkar.</span></li></ol>
+    </div></details>
+  </article>
+
+  <!-- 2.5 -->
+  <article class="sec" id="s25">
+    <h2><span class="no">2.5</span>Hreyfijöfnur fyrir fasta hröðun</h2>
+    <p>Klukkan fer í gang þegar hreyfingin byrjar (<span class="math"><var>t</var><sub>0</sub> = 0</span>). <var>x</var><sub>0</sub> og <var>v</var><sub>0</sub> eru upphafsstaða og upphafshraði; <var>x</var> og <var>v</var> eru staða og hraði á tímanum <var>t</var>. Hröðunin <var>a</var> er <b>föst</b> allan tímann.</p>
+    <div class="eqcards">
+      <div class="eqcard"><div class="n">Jafna 1 <span>án <var>Δx</var></span></div><div class="math"><var>v</var> = <var>v</var><sub>0</sub> + <var>at</var></div></div>
+      <div class="eqcard"><div class="n">Jafna 2 <span>án <var>v</var></span></div><div class="math"><var>x</var> = <var>x</var><sub>0</sub> + <var>v</var><sub>0</sub><var>t</var> + ½<var>at</var>²</div></div>
+      <div class="eqcard"><div class="n">Jafna 3 <span>án <var>t</var></span></div><div class="math"><var>v</var>² = <var>v</var><sub>0</sub>² + 2<var>a</var>(<var>x</var> − <var>x</var><sub>0</sub>)</div></div>
+      <div class="eqcard"><div class="n">Jafna 4 <span>án <var>a</var></span></div><div class="math"><var>x</var> = <var>x</var><sub>0</sub> + ½(<var>v</var><sub>0</sub> + <var>v</var>)<var>t</var></div></div>
+    </div>
+    <h3>Hvaða jöfnu á að nota?</h3>
+    <ol>
+      <li><b>Athugaðu forsendurnar.</b> Fastur hraði → <span class="math"><var>x</var> = <var>x</var><sub>0</sub> + <var>vt</var></span>. Föst hröðun → jöfnur 1–4. Breytist hröðunin á miðri leið → skiptu hreyfingunni í hluta.</li>
+      <li><b>Finndu stærðina sem hvorki er gefin né spurt um.</b> Veldu jöfnuna sem inniheldur hana <em>ekki</em>.</li>
+    </ol>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.7 · Flugbraut</div>
+      <p>Þota fer úr kyrrstöðu með 2,0 m/s² og þarf að ná 80 m/s. Hve löng flugbraut? Tíminn <var>t</var> kemur hvergi við sögu → <b>jafna 3</b>.</p>
+      <p class="calc-line"><var>x</var> − <var>x</var><sub>0</sub> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2<var>a</var> = (80² − 0²) / (2 · 2,0) = <span class="ans">1600 m</span></p>
+      <button class="goto" data-goto="jofnur" data-preset="flugvel">Opna í hreyfijöfnu-reiknivél →</button>
+    </div>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.8 · Hjólabretti</div>
+      <p><span class="math"><var>v</var><sub>0</sub> = 1,0 m/s</span>, <span class="math"><var>a</var> = 1,5 m/s²</span>, <span class="math"><var>t</var> = 4,0 s</span>.</p>
+      <p class="calc-line">Jafna 2: <var>Δx</var> = 1,0 · 4,0 + ½ · 1,5 · 4,0² = <span class="ans">16 m</span>&nbsp;&nbsp;·&nbsp;&nbsp;Jafna 1: <var>v</var> = 1,0 + 1,5 · 4,0 = <span class="ans">7,0 m/s</span></p>
+      <p class="calc-line">Prófun, jafna 4: ½(1,0 + 7,0) · 4,0 = 16 m ✓</p>
+      <button class="goto" data-goto="jofnur" data-preset="bretti">Opna í hreyfijöfnu-reiknivél →</button>
+    </div>
+    <h3>Að einangra stærð</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Finna</th><th>Úr jöfnu</th><th>Formúla</th></tr></thead>
+      <tbody>
+        <tr><td><var>t</var></td><td>1</td><td class="math"><var>t</var> = (<var>v</var> − <var>v</var><sub>0</sub>) / <var>a</var></td></tr>
+        <tr><td><var>x</var> − <var>x</var><sub>0</sub></td><td>3</td><td class="math"><var>x</var> − <var>x</var><sub>0</sub> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2<var>a</var></td></tr>
+        <tr><td><var>a</var></td><td>3</td><td class="math"><var>a</var> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2(<var>x</var> − <var>x</var><sub>0</sub>)</td></tr>
+        <tr><td><var>t</var>, ef <var>v</var><sub>0</sub> = 0</td><td>2</td><td class="math"><var>t</var> = √(2(<var>x</var> − <var>x</var><sub>0</sub>) / <var>a</var>)</td></tr>
+        <tr><td><var>v</var></td><td>3</td><td class="math"><var>v</var> = ±√(<var>v</var><sub>0</sub>² + 2<var>a</var>(<var>x</var> − <var>x</var><sub>0</sub>))</td></tr>
+      </tbody>
+    </table></div>
+    <p>Kvaðratrót gefur tvær lausnir, + og −. Veldu formerkið út frá aðstæðum: + ef hluturinn hreyfist í jákvæða stefnu.</p>
+    <div class="myth"><h4>Algengar ranghugmyndir</h4>
+      <ul>
+        <li><b>„Lokahraðinn er vegalengdin deilt með tímanum.“</b> Það gefur meðalhraða. Við fasta hröðun er lokahraðinn annar.</li>
+        <li><b>„Formerkin skipta ekki máli.“</b> Ef bíll ekur í jákvæða stefnu og hemlar er <var>a</var> neikvætt. Og athugaðu: (−7,0)² = 49 en −7,0² = −49 á vasareikni.</li>
+      </ul>
+    </div>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Bíll fer úr kyrrstöðu með 3,0 m/s² í 6,0 s. Lokahraði og vegalengd?<br><span class="a">18 m/s og 54 m</span></li>
+      <li>Bíll á 20 m/s hemlar með −5,0 m/s². Hve langt þar til hann stöðvast?<br><span class="a">40 m</span></li>
+      <li>Gefin eru <var>v</var><sub>0</sub>, <var>v</var> og <var>Δx</var>; spurt um <var>a</var>. Hvaða jafna?<br><span class="a">Jafna 3, því <var>t</var> kemur ekki fyrir í henni.</span></li></ol>
+    </div></details>
+  </article>
+
+  <!-- 2.6 -->
+  <article class="sec" id="s26">
+    <h2><span class="no">2.6</span>Lausnaaðferð</h2>
+    <p>Gangfræðidæmi verða miklu auðveldari ef alltaf er unnið eftir sömu sex skrefunum:</p>
+    <ol class="steps6">
+      <li><div><b>Teiknaðu mynd.</b> Merktu inn hnitakerfi og jákvæða stefnu.</div></li>
+      <li><div><b>Skráðu þekktu stærðirnar</b> með formerkjum og einingum. Breyttu í SI (m, s, m/s).</div></li>
+      <li><div><b>Skráðu hvað er spurt um.</b></div></li>
+      <li><div><b>Athugaðu forsendurnar og veldu jöfnu.</b> Fastur hraði? Föst hröðun? Breytist hún á miðri leið?</div></li>
+      <li><div><b>Leystu fyrst með táknum</b>, settu svo inn tölur með einingum. Námundaðu aðeins lokasvarið.</div></li>
+      <li><div><b>Athugaðu svarið.</b> Skynsamleg stærð? Réttar einingar? Rétt formerki?</div></li>
+    </ol>
+    <h3>Þekktar stærðir sem leynast í textanum</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Orðalag</th><th>Þýðir</th></tr></thead>
+      <tbody>
+        <tr><td>„úr kyrrstöðu“, „fer af stað“</td><td class="math"><var>v</var><sub>0</sub> = 0</td></tr>
+        <tr><td>„stöðvast“, „nemur staðar“</td><td class="math"><var>v</var> = 0</td></tr>
+        <tr><td>„fastur hraði“</td><td class="math"><var>a</var> = 0</td></tr>
+        <tr><td>„frjálst fall“ (upp jákvætt)</td><td class="math"><var>a</var> = −<var>g</var></td></tr>
+        <tr><td>„efst á ferlinum“, „mesta hæð“</td><td class="math"><var>v</var> = 0</td></tr>
+        <tr><td>„lendir aftur í sömu hæð“</td><td class="math"><var>y</var> = <var>y</var><sub>0</sub></td></tr>
+      </tbody>
+    </table></div>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.9 · Stöðvunarvegalengd á Reykjanesbraut</div>
+      <p>90 km/klst, viðbragðstími 0,80 s, hemlunarhröðun −7,0 m/s². Hröðunin breytist þegar hemlað er, svo hreyfingunni er <b>skipt í tvo hluta</b>.</p>
+      <p class="calc-line"><var>v</var><sub>0</sub> = 90 / 3,6 = 25 m/s</p>
+      <p class="calc-line">Hluti 1 (<var>a</var> = 0): <var>Δx</var><sub>1</sub> = <var>v</var><sub>0</sub><var>t</var><sub>1</sub> = 25 · 0,80 = 20 m</p>
+      <p class="calc-line">Hluti 2 (jafna 3): <var>Δx</var><sub>2</sub> = (0 − 25²) / (2 · (−7,0)) = 44,6 m</p>
+      <p class="calc-line"><var>Δx</var> = 20 + 44,6 ≈ <span class="ans">65 m</span></p>
+      <button class="goto" data-goto="stodvun" data-preset="thurrt">Prófa aðrar aðstæður í reiknivél →</button>
+    </div>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Reiknaðu sýnidæmi 2.9 fyrir hálan veg, <var>a</var> = −3,0 m/s².<br><span class="a">20 m + 104 m ≈ 120 m, næstum tvöfalt lengra.</span></li>
+      <li>Lest fer úr kyrrstöðu með 0,50 m/s² í 20 s og ekur svo á föstum hraða í 60 s. Hve langt alls?<br><span class="a">100 m + 600 m = 700 m</span></li>
+      <li>Hvaða þekktu stærðir felast í „Bolta er sleppt úr kyrrstöðu og loftmótstaðan er hverfandi“? Upp er jákvætt.<br><span class="a"><var>v</var><sub>0</sub> = 0 og <var>a</var> = −9,80 m/s².</span></li></ol>
+    </div></details>
+  </article>
+
+  <!-- 2.7 -->
+  <article class="sec" id="s27">
+    <h2><span class="no">2.7</span>Frjálst fall</h2>
+    <p>Hlutur er í <span class="term">frjálsu falli</span> þegar þyngdarkrafturinn er eini krafturinn sem verkar á hann (loftmótstöðu er sleppt). Þá falla allir hlutir með sömu hröðun, óháð massa. Með upp sem jákvæða stefnu er <span class="math"><var>a</var> = −<var>g</var></span>, þar sem <span class="math"><var>g</var> = 9,80 m/s²</span> (á Íslandi um 9,82 m/s²).</p>
+    <div class="eqcards">
+      <div class="eqcard"><div class="n">án <var>Δy</var></div><div class="math"><var>v</var> = <var>v</var><sub>0</sub> − <var>gt</var></div></div>
+      <div class="eqcard"><div class="n">án <var>v</var></div><div class="math"><var>y</var> = <var>y</var><sub>0</sub> + <var>v</var><sub>0</sub><var>t</var> − ½<var>gt</var>²</div></div>
+      <div class="eqcard"><div class="n">án <var>t</var></div><div class="math"><var>v</var>² = <var>v</var><sub>0</sub>² − 2<var>g</var>(<var>y</var> − <var>y</var><sub>0</sub>)</div></div>
+    </div>
+    <p><b>Samhverfa:</b> ef hlutur lendir í sömu hæð er hann jafnlengi upp og niður, ferðin er sú sama í hverri hæð á uppleið og niðurleið, og hraðinn er núll efst. Hröðunin er −<var>g</var> <em>allan</em> tímann, líka efst.</p>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.10 · Skógafoss</div>
+      <p>Vatnsdropi fellur úr kyrrstöðu 60 m niður. <span class="math"><var>y</var> − <var>y</var><sub>0</sub> = −60 m</span>, <span class="math"><var>v</var><sub>0</sub> = 0</span>.</p>
+      <p class="calc-line"><var>t</var> = √(2 · 60 / 9,80) = <span class="ans">3,5 s</span>&nbsp;&nbsp;·&nbsp;&nbsp;<var>v</var> = −√(2 · 9,80 · 60) = <span class="ans">−34 m/s</span> ≈ 120 km/klst niður</p>
+      <button class="goto" data-goto="fall" data-preset="skogafoss">Opna í frjálsfalls-reiknivél →</button>
+    </div>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.11 · Strokkur</div>
+      <p>Vatnið nær 20 m hæð. Efst er <var>v</var> = 0.</p>
+      <p class="calc-line"><var>v</var><sub>0</sub> = √(2 · 9,80 · 20) = <span class="ans">19,8 m/s</span>&nbsp;&nbsp;·&nbsp;&nbsp;<var>t</var><sub>upp</sub> = 19,8 / 9,80 = 2,0 s → alls <span class="ans">4,0 s</span> á lofti</p>
+      <button class="goto" data-goto="fall" data-preset="strokkur">Opna í frjálsfalls-reiknivél →</button>
+    </div>
+    <h3>Þegar tíminn kemur fyrir í öðru veldi</h3>
+    <p>Ef hvorki <var>v</var><sub>0</sub> né <var>y</var> − <var>y</var><sub>0</sub> er núll er jafnan annars stigs í <var>t</var>. Færðu hana á formið <span class="math"><var>At</var>² + <var>Bt</var> + <var>C</var> = 0</span> og notaðu lausnarformúluna:</p>
+    <div class="formula"><div class="big"><var>t</var> = <span class="frac"><span>−<var>B</var> ± √(<var>B</var>² − 4<var>AC</var>)</span><span>2<var>A</var></span></span></div>
+      <div class="cap">Hástafirnir A, B og C eru notaðir svo þeim sé ekki ruglað saman við hröðunina <var>a</var>. Neikvæð lausn á yfirleitt ekki við.</div></div>
+    <div class="ex">
+      <div class="lbl">Dæmi · Steini kastað upp af brún</div>
+      <p>5,0 m/s upp af brún sem er 10 m yfir jörðu. <span class="math">−10 = 5,0<var>t</var> − 4,9<var>t</var>²</span> → <span class="math">4,9<var>t</var>² − 5,0<var>t</var> − 10 = 0</span></p>
+      <p class="calc-line"><var>t</var> = (5,0 ± √(25 + 196)) / 9,8 → <var>t</var> = <span class="ans">2,0 s</span> (hin lausnin, −1,0 s, á ekki við)</p>
+      <button class="goto" data-goto="fall" data-preset="steinn">Opna í frjálsfalls-reiknivél →</button>
+    </div>
+    <div class="formula"><div class="big"><var>t</var> = √(2<var>d</var> / <var>g</var>)</div>
+      <div class="cap"><b>Viðbragðstími með reglustiku:</b> vinur sleppir reglustiku og þú grípur hana eftir að hún hefur fallið <var>d</var>. 18 cm gefur 0,19 s.</div></div>
+    <div class="myth"><h4>Algengar ranghugmyndir</h4>
+      <ul>
+        <li><b>„Þyngri hlutir falla hraðar.“</b> Án loftmótstöðu falla allir hlutir eins. David Scott lét hamar og fjöður falla á tunglinu 1971 og þau lentu samtímis.</li>
+        <li><b>„Hröðunin er +g upp og −g niður.“</b> Hún er −<var>g</var> alla leiðina. Það er hraðinn sem skiptir um formerki.</li>
+      </ul>
+    </div>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Reglustika fellur 18 cm áður en þú grípur. Viðbragðstími?<br><span class="a">0,19 s</span></li>
+      <li>Bolta er kastað beint upp með 12 m/s. Hve hátt og hve lengi á lofti?<br><span class="a">7,3 m og 2,4 s</span></li>
+      <li>Í sýnidæmi 2.10 fékkst <var>v</var> = −34 m/s. Hvað merkir mínusmerkið? Hægir dropinn á sér?<br><span class="a">Hraðinn vísar niður, í neikvæða stefnu. Dropinn hægir ekki á sér: hraði og hröðun hafa sama formerki, svo ferðin eykst.</span></li></ol>
+    </div></details>
+  </article>
+
+  <!-- 2.8 -->
+  <article class="sec" id="s28">
+    <h2><span class="no">2.8</span>Gröf af hreyfingu</h2>
+    <p>Tíminn er alltaf á lárétta ásnum. <span class="term">Halli</span> beinnar línu er lóðrétta breytingin deilt með þeirri láréttu. Halli snertils <span class="en">(tangent)</span> gefur augnabliksgildi.</p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Graf</th><th>Hallinn er</th><th>Flatarmálið undir er</th></tr></thead>
+      <tbody>
+        <tr><td><b><var>x</var>–<var>t</var></b></td><td>hraðinn <var>v</var></td><td>(ekki notað)</td></tr>
+        <tr><td><b><var>v</var>–<var>t</var></b></td><td>hröðunin <var>a</var></td><td>færslan <var>Δx</var></td></tr>
+        <tr><td><b><var>a</var>–<var>t</var></b></td><td>(ekki notað)</td><td>hraðabreytingin <var>Δv</var></td></tr>
+      </tbody>
+    </table></div>
+    <p>Flatarmál fyrir neðan tímaásinn (neikvæður hraði) telst neikvætt. Farin vegalengd fæst með því að leggja öll flatarmálin saman <em>án</em> formerkja. Á gröfunum hér að neðan er jákvætt flatarmál blátt og neikvætt appelsínugult.</p>
+    <div class="ex">
+      <div class="lbl">Sýnidæmi 2.12 · Sama hreyfing í þremur gröfum</div>
+      <p>Bíll fer úr kyrrstöðu með 2,0 m/s² í 10 s, ekur svo á föstum hraða í 10 s og hemlar loks með −4,0 m/s² þar til hann stöðvast. Dragðu músina (eða fingurinn) yfir gröfin eða ýttu á „Spila“.</p>
+      <p class="calc-line"><var>Δx</var> = ½ · 10 · 20 + 10 · 20 + ½ · 5 · 20 = 100 + 200 + 50 = <span class="ans">350 m</span></p>
+    </div>
+    <div id="th-view"></div>
+    <div class="myth"><h4>Algengar ranghugmyndir</h4>
+      <ul>
+        <li><b>„<var>x</var>–<var>t</var>-graf er mynd af leiðinni.“</b> Nei, það sýnir stöðu sem fall af tíma.</li>
+        <li><b>„Þar sem <var>v</var>–<var>t</var>-grafið er hæst er hröðunin mest.“</b> Þar er hraðinn mestur. Hröðunin er hallinn.</li>
+        <li><b>„Þegar <var>x</var>–<var>t</var>-grafið fer niður hægir hluturinn á sér.“</b> Þá hreyfist hann í neikvæða stefnu.</li>
+      </ul>
+    </div>
+    <button class="goto" data-goto="hlutar" data-preset="s212">Breyttu hreyfingunni í reiknivélinni „Hreyfing í hlutum“ →</button>
+    <details class="try"><summary>Prófaðu þig</summary><div class="q">
+      <ol><li>Á <var>x</var>–<var>t</var>-grafi er bein lína frá (0 s; 2 m) til (4,0 s; 14 m). Hver er hraðinn?<br><span class="a">3,0 m/s</span></li>
+      <li>Á <var>v</var>–<var>t</var>-grafi eykst hraðinn jafnt úr 0 í 12 m/s á 6,0 s. Hver er hröðunin og færslan?<br><span class="a">2,0 m/s² og 36 m</span></li>
+      <li>Hver er hröðunin á milli 20 s og 25 s í sýnidæmi 2.12? Hvernig sést hún á <var>v</var>–<var>t</var>-grafinu?<br><span class="a">−4,0 m/s². Grafið hallar niður: hraðinn fellur úr 20 m/s í 0 á 5,0 s.</span></li>
+      <li>Í sýnidæmi 2.13 er <var>v</var> = −4,9 m/s þegar <var>t</var> = 1,5 s. Hvað merkir mínusmerkið? Hver er farin vegalengd og færsla fyrstu 1,5 s?<br><span class="a">Boltinn hreyfist niður. Farin vegalengd er 4,90 m + 1,23 m ≈ 6,1 m en færslan 4,90 m − 1,23 m ≈ 3,7 m.</span></li></ol>
+    </div></details>
+  </article>
+  <nav class="pager" id="pager" aria-label="Undirkaflar"></nav>
+  </div>
+ </div>
+</section>
+
+<!-- ================= REIKNIVÉLAR ================= -->
+<section class="panel" id="p-reiknivelar" role="tabpanel" aria-labelledby="tab-reiknivelar" hidden>
+ <div class="calcs">
+  <div>
+   <nav class="calcnav" role="tablist" aria-label="Reiknivélar">
+     <button role="tab" data-calc="hradi" aria-selected="true"><b>Hraði og vegalengd</b><small>v̄ = Δx / Δt</small></button>
+     <button role="tab" data-calc="jofnur" aria-selected="false"><b>Hreyfijöfnur</b><small>Föst hröðun, 5 stærðir</small></button>
+     <button role="tab" data-calc="fall" aria-selected="false"><b>Frjálst fall</b><small>Kast upp eða fall niður</small></button>
+     <button role="tab" data-calc="stodvun" aria-selected="false"><b>Stöðvunarvegalengd</b><small>Viðbragð + hemlun</small></button>
+     <button role="tab" data-calc="hlutar" aria-selected="false"><b>Hreyfing í hlutum</b><small>Gröf, færsla, farin vegal.</small></button>
+   </nav>
+   <div class="conv">
+     <h4>Einingabreytir</h4>
+     <label class="fld"><span class="fld-l">km/klst</span><span class="fld-row"><input type="text" inputmode="decimal" id="cv-kmh" value="90"></span></label>
+     <label class="fld"><span class="fld-l">m/s</span><span class="fld-row"><input type="text" inputmode="decimal" id="cv-ms" value="25"></span></label>
+     <p>1 m/s = 3,6 km/klst</p>
+   </div>
+  </div>
+
+  <div>
+   <!-- HRAÐI -->
+   <section class="calc" data-calc="hradi" id="c-hradi">
+     <div class="calc-h"><h2>Hraði, vegalengd og tími</h2><p>Fyrir fastan hraða (eða meðalhraða): <span class="math"><var>v̄</var> = <var>Δx</var> / <var>Δt</var></span>. Veldu hvað á að finna og fylltu inn hinar tvær stærðirnar. Einingum er breytt í SI sjálfkrafa.</p></div>
+     <div class="calc-grid">
+       <div class="card">
+         <div class="seg" id="h-find" role="group" aria-label="Hvað á að finna">
+           <button type="button" data-v="v" aria-pressed="true">Hraða</button>
+           <button type="button" data-v="d" aria-pressed="false">Vegalengd</button>
+           <button type="button" data-v="t" aria-pressed="false">Tíma</button>
+         </div>
+         <label class="fld"><span class="fld-l">Vegalengd / færsla <span class="math"><var>Δx</var></span></span>
+           <span class="fld-row"><input type="text" inputmode="decimal" id="h-d" value="5,77"><select id="h-du" aria-label="Eining vegalengdar"><option value="1">m</option><option value="1000" selected>km</option><option value="0.01">cm</option></select></span></label>
+         <label class="fld"><span class="fld-l">Tími <span class="math"><var>Δt</var></span></span>
+           <span class="fld-row"><input type="text" inputmode="decimal" id="h-t" value="6,00"><select id="h-tu" aria-label="Eining tíma"><option value="1">s</option><option value="60" selected>mín</option><option value="3600">klst</option></select></span></label>
+         <label class="fld"><span class="fld-l">Hraði <span class="math"><var>v̄</var></span></span>
+           <span class="fld-row"><input type="text" inputmode="decimal" id="h-v" value=""><select id="h-vu" aria-label="Eining hraða"><option value="1">m/s</option><option value="0.2777777777777778">km/klst</option></select></span></label>
+         <div class="presets"><span>Dæmi úr kaflanum</span>
+           <button class="chip" type="button" data-hp="gong">Hvalfjarðargöng</button>
+           <button class="chip" type="button" data-hp="straeto">Strætó 12 km</button>
+           <button class="chip" type="button" data-hp="taug">Taugaboð</button>
+           <button class="chip" type="button" data-hp="tungl">Fjarlægð til tunglsins</button>
+         </div>
+       </div>
+       <div class="card"><div id="h-out"></div></div>
+     </div>
+     <div id="h-view"></div>
+   </section>
+
+   <!-- HREYFIJÖFNUR -->
+   <section class="calc" data-calc="jofnur" id="c-jofnur" hidden>
+     <div class="calc-h"><h2>Hreyfijöfnur fyrir fasta hröðun</h2><p>Fylltu inn <b>nákvæmlega þrjár</b> af fimm stærðum og skildu hinar eftir tómar. Reiknivélin velur jöfnu eins og í kafla 2.5, sýnir hvert skref og teiknar hreyfinguna. Allt í SI-einingum; mundu formerkin.</p></div>
+     <div class="calc-grid">
+       <div class="card">
+         <label class="fld"><span class="fld-l">Færsla <span class="math"><var>Δx</var> = <var>x</var> − <var>x</var><sub>0</sub></span> <span class="badge" id="jb-d"></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="j-d"><span class="unit">m</span></span></label>
+         <label class="fld"><span class="fld-l">Upphafshraði <span class="math"><var>v</var><sub>0</sub></span> <span class="badge" id="jb-v0"></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="j-v0"><span class="unit">m/s</span></span></label>
+         <label class="fld"><span class="fld-l">Lokahraði <span class="math"><var>v</var></span> <span class="badge" id="jb-v"></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="j-v"><span class="unit">m/s</span></span></label>
+         <label class="fld"><span class="fld-l">Hröðun <span class="math"><var>a</var></span> <span class="badge" id="jb-a"></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="j-a"><span class="unit">m/s²</span></span></label>
+         <label class="fld"><span class="fld-l">Tími <span class="math"><var>t</var></span> <span class="badge" id="jb-t"></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="j-t"><span class="unit">s</span></span></label>
+         <div class="presets"><span>Dæmi úr kaflanum</span>
+           <button class="chip" type="button" data-jp="flugvel">Flugbraut (2.7)</button>
+           <button class="chip" type="button" data-jp="bretti">Hjólabretti (2.8)</button>
+           <button class="chip" type="button" data-jp="rafbill">Rafbíll (2.5)</button>
+           <button class="chip" type="button" data-jp="straeto">Strætó stoppar (2.6)</button>
+           <button class="chip" type="button" data-jp="hjol">Hjólreiðar (þrep 2)</button>
+           <button class="chip" type="button" data-jp="bolti">Bolti upp og niður</button>
+         </div>
+         <button class="btn ghost" type="button" id="j-clear">Hreinsa allt</button>
+       </div>
+       <div class="card">
+         <div class="eqcards" id="j-eqs">
+           <div class="eqcard" data-eq="1"><div class="n">Jafna 1 <span>án <var>Δx</var></span></div><div class="math"><var>v</var> = <var>v</var><sub>0</sub> + <var>at</var></div></div>
+           <div class="eqcard" data-eq="2"><div class="n">Jafna 2 <span>án <var>v</var></span></div><div class="math"><var>Δx</var> = <var>v</var><sub>0</sub><var>t</var> + ½<var>at</var>²</div></div>
+           <div class="eqcard" data-eq="3"><div class="n">Jafna 3 <span>án <var>t</var></span></div><div class="math"><var>v</var>² = <var>v</var><sub>0</sub>² + 2<var>aΔx</var></div></div>
+           <div class="eqcard" data-eq="4"><div class="n">Jafna 4 <span>án <var>a</var></span></div><div class="math"><var>Δx</var> = ½(<var>v</var><sub>0</sub> + <var>v</var>)<var>t</var></div></div>
+         </div>
+         <div id="j-out"></div>
+       </div>
+     </div>
+     <div id="j-view"></div>
+   </section>
+
+   <!-- FRJÁLST FALL -->
+   <section class="calc" data-calc="fall" id="c-fall" hidden>
+     <div class="calc-h"><h2>Frjálst fall</h2><p>Hlut er kastað beint upp (jákvæður <var>v</var><sub>0</sub>), beint niður (neikvæður) eða sleppt (<var>v</var><sub>0</sub> = 0) úr hæð <var>h</var> yfir jörðu. Upp er jákvæð stefna og <span class="math"><var>a</var> = −<var>g</var></span>. Loftmótstöðu er sleppt.</p></div>
+     <div class="calc-grid">
+       <div class="card">
+         <label class="fld"><span class="fld-l">Upphafshraði <span class="math"><var>v</var><sub>0</sub></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="f-v0" value="12"><span class="unit">m/s</span></span></label>
+         <label class="fld"><span class="fld-l">Upphafshæð yfir jörðu <span class="math"><var>h</var></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="f-h" value="0"><span class="unit">m</span></span></label>
+         <label class="fld"><span class="fld-l">Þyngdarhröðun <span class="math"><var>g</var></span></span>
+           <select id="f-g"><option value="9.80" selected>Jörðin í dæmum · 9,80 m/s²</option><option value="9.82">Ísland · 9,82 m/s²</option><option value="1.62">Tunglið · 1,62 m/s²</option><option value="3.71">Mars · 3,71 m/s²</option></select></label>
+         <div class="presets"><span>Dæmi úr kaflanum</span>
+           <button class="chip" type="button" data-fp="skogafoss">Skógafoss (2.10)</button>
+           <button class="chip" type="button" data-fp="strokkur">Strokkur (2.11)</button>
+           <button class="chip" type="button" data-fp="steinn">Steinn af brún</button>
+           <button class="chip" type="button" data-fp="bolti">Bolti 12 m/s</button>
+           <button class="chip" type="button" data-fp="tungl">Hamar á tunglinu</button>
+         </div>
+         <div class="conv" style="margin-top:4px">
+           <h4>Viðbragðstími með reglustiku</h4>
+           <label class="fld"><span class="fld-l">Fallvegalengd <span class="math"><var>d</var></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="f-d" value="18"><span class="unit">cm</span></span></label>
+           <div id="f-rt" class="msg"></div>
+         </div>
+       </div>
+       <div class="card"><div id="f-out"></div></div>
+     </div>
+     <div id="f-view"></div>
+   </section>
+
+   <!-- STÖÐVUN -->
+   <section class="calc" data-calc="stodvun" id="c-stodvun" hidden>
+     <div class="calc-h"><h2>Stöðvunarvegalengd</h2><p>Dæmi í tveimur hlutum eins og sýnidæmi 2.9. Fyrst ekur bíllinn á föstum hraða á meðan ökumaðurinn bregst við, svo hemlar hann með fastri hröðun.</p></div>
+     <div class="calc-grid">
+       <div class="card">
+         <label class="fld"><span class="fld-l">Hraði</span><span class="fld-row"><input type="text" inputmode="decimal" id="s-v" value="90"><span class="unit">km/klst</span></span></label>
+         <label class="fld"><span class="fld-l">Viðbragðstími <span class="math"><var>t</var><sub>1</sub></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="s-tr" value="0,80"><span class="unit">s</span></span></label>
+         <label class="fld"><span class="fld-l">Vegur</span>
+           <select id="s-surf"><option value="7.0" selected>Þurr vegur · 7,0 m/s²</option><option value="5.0">Blautur vegur · um 5 m/s²</option><option value="3.0">Snjór · um 3 m/s²</option><option value="1.5">Svell · um 1,5 m/s²</option><option value="custom">Annað…</option></select></label>
+         <label class="fld" id="s-custom-wrap" hidden><span class="fld-l">Stærð hemlunarhröðunar</span><span class="fld-row"><input type="text" inputmode="decimal" id="s-a" value="6,0"><span class="unit">m/s²</span></span></label>
+         <div class="presets"><span>Fljótlegt</span>
+           <button class="chip" type="button" data-sp="thurrt">Sýnidæmi 2.9</button>
+           <button class="chip" type="button" data-sp="halt">Hálka (prófaðu þig)</button>
+           <button class="chip" type="button" data-sp="baer">50 km/klst í bænum</button>
+           <button class="chip" type="button" data-sp="sima">Í símanum (2 s)</button>
+         </div>
+       </div>
+       <div class="card"><div id="s-out"></div></div>
+     </div>
+     <div class="card">
+       <div class="legend"><span><i class="r"></i>Viðbragðsvegalengd (fastur hraði)</span><span><i class="b"></i>Hemlunarvegalengd</span></div>
+       <div class="bars" id="s-bars"></div>
+     </div>
+     <div class="card chart-solo">
+       <div style="font-weight:600">Stöðvunarvegalengd sem fall af hraða <span style="color:var(--muted);font-weight:400">· tvöfaldur hraði gefur meira en tvöfalda vegalengd</span></div>
+       <svg id="s-curve"></svg>
+     </div>
+     <div id="s-view"></div>
+   </section>
+
+   <!-- HLUTAR -->
+   <section class="calc" data-calc="hlutar" id="c-hlutar" hidden>
+     <div class="calc-h"><h2>Hreyfing í hlutum</h2><p>Settu saman hreyfingu úr köflum með fastri hröðun. Lokagildi hvers kafla verða upphafsgildi þess næsta. Reiknivélin finnur færslu, farna vegalengd, meðalhraða og meðalferð og teiknar <var>x</var>–<var>t</var>, <var>v</var>–<var>t</var> og <var>a</var>–<var>t</var>.</p></div>
+     <div class="calc-grid">
+       <div class="card">
+         <label class="fld"><span class="fld-l">Upphafshraði <span class="math"><var>v</var><sub>0</sub></span></span><span class="fld-row"><input type="text" inputmode="decimal" id="p-v0" value="0"><span class="unit">m/s</span></span></label>
+         <div class="tbl-wrap"><table class="segs">
+           <thead><tr><th>#</th><th>Hröðun <var>a</var> (m/s²)</th><th>Tími <var>Δt</var> (s)</th><th></th></tr></thead>
+           <tbody id="p-rows"></tbody>
+         </table></div>
+         <button class="btn ghost" type="button" id="p-add">+ Bæta við kafla</button>
+         <div class="presets"><span>Dæmi úr kaflanum</span>
+           <button class="chip" type="button" data-pp="s212">Bíll (2.12)</button>
+           <button class="chip" type="button" data-pp="bolti">Bolti upp og niður (2.13)</button>
+           <button class="chip" type="button" data-pp="lest">Lest (þrep 3)</button>
+         </div>
+       </div>
+       <div class="card"><div id="p-out"></div></div>
+     </div>
+     <div id="p-view"></div>
+   </section>
+  </div>
+ </div>
+</section>
+
+<!-- ================= FORMÚLUBLAÐ ================= -->
+<section class="panel" id="p-formulur" hidden>
+ <div class="sheet">
+  <div style="display:grid;gap:12px">
+   <h2>Gátlisti fyrir kaflaprófið</h2>
+   <ul class="check" id="checklist">
+     <li><label><input type="checkbox" id="ck1"> Ég get greint á milli færslu, vegalengdar og farinnar vegalengdar.</label></li>
+     <li><label><input type="checkbox" id="ck2"> Ég get valið hnitakerfi og gefið færslu, hraða og hröðun rétt formerki.</label></li>
+     <li><label><input type="checkbox" id="ck3"> Ég get reiknað meðalhraða, meðalferð og meðalhröðun og útskýrt muninn.</label></li>
+     <li><label><input type="checkbox" id="ck4"> Ég veit hvenær hreyfijöfnurnar gilda og get valið jöfnu sem á við.</label></li>
+     <li><label><input type="checkbox" id="ck5"> Ég get skipt hreyfingu í hluta þegar hröðunin breytist.</label></li>
+     <li><label><input type="checkbox" id="ck6"> Ég get leyst dæmi um frjálst fall með a = −g.</label></li>
+     <li><label><input type="checkbox" id="ck7"> Ég get lesið hraða og hröðun úr halla grafs og færslu úr flatarmáli undir v–t-grafi.</label></li>
+   </ul>
+  </div>
+  <div style="display:grid;gap:12px">
+   <h2>Orðalisti</h2>
+   <div class="gloss">
+     <div><span>augnablikshraði</span><span>instantaneous velocity</span></div>
+     <div><span>augnablikshröðun</span><span>instantaneous acceleration</span></div>
+     <div><span>farin vegalengd</span><span>distance traveled</span></div>
+     <div><span>ferð</span><span>speed</span></div>
+     <div><span>flatarmál undir grafi</span><span>area under the curve</span></div>
+     <div><span>frjálst fall</span><span>free fall</span></div>
+     <div><span>færsla</span><span>displacement</span></div>
+     <div><span>gangfræði</span><span>kinematics</span></div>
+     <div><span>halli, hallatala</span><span>slope</span></div>
+     <div><span>hnitakerfi</span><span>coordinate system</span></div>
+     <div><span>hraðaminnkun</span><span>deceleration</span></div>
+     <div><span>hraði</span><span>velocity</span></div>
+     <div><span>hröðun</span><span>acceleration</span></div>
+     <div><span>lausnarformúla</span><span>quadratic formula</span></div>
+     <div><span>loftmótstaða</span><span>air resistance</span></div>
+     <div><span>meðalferð</span><span>average speed</span></div>
+     <div><span>meðalhraði</span><span>average velocity</span></div>
+     <div><span>meðalhröðun</span><span>average acceleration</span></div>
+     <div><span>snertill</span><span>tangent line</span></div>
+     <div><span>staða</span><span>position</span></div>
+     <div><span>stigstærð</span><span>scalar</span></div>
+     <div><span>stöðvunarvegalengd</span><span>stopping distance</span></div>
+     <div><span>viðbragðstími</span><span>reaction time</span></div>
+     <div><span>viðmiðunarkerfi</span><span>frame of reference</span></div>
+     <div><span>vigur</span><span>vector</span></div>
+     <div><span>þyngdarhröðun</span><span>acceleration due to gravity</span></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+</div>
+</main>
+<footer><div class="wrap">Byggt á kafla 2 í heftinu „Klassísk eðlisfræði“, sem fylgir <i>College Physics 2e</i> (OpenStax, CC BY-NC-SA 4.0). Reiknivélarnar gera ráð fyrir fastri hröðun og engri loftmótstöðu.</div></footer>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const NS='http://www.w3.org/2000/svg';
+const nfCache={};
+function fmt(n,sig){
+  sig=sig||4;
+  if(n==null||!isFinite(n))return '—';
+  if(Math.abs(n)<1e-10)n=0;
+  const a=Math.abs(n);
+  if(a!==0&&(a>=1e7||a<1e-3)){
+    const e=Math.floor(Math.log10(a));const m=n/Math.pow(10,e);
+    return fmt(m,sig)+' · 10'+String(e).split('').map(c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'['0123456789'.indexOf(c)]||'⁻').join('');
+  }
+  const f=nfCache[sig]||(nfCache[sig]=new Intl.NumberFormat('en-US',{maximumSignificantDigits:sig}));
+  return f.format(n).replace(/,/g,' ').replace('.',',').replace('-','−');
+}
+const p=(n)=>n<0?'('+fmt(n)+')':fmt(n);
+function parse(s){
+  if(s==null)return null;
+  s=String(s).trim().replace(/\s/g,'').replace(/−/g,'-').replace(',','.');
+  if(s==='')return null;
+  const n=Number(s);return isFinite(n)?n:NaN;
+}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function setVal(id,n){const i=document.getElementById(id);i.value=n==null?'':String(n).replace('.',',');}
+function m(s){return '<span class="math">'+s+'</span>';}
+
+/* ---------- number line ticks (2.1) ---------- */
+(function(){const g=$('#nl-ticks');for(let i=0;i<=10;i++){const x=40+i*50;el('line',{class:'tk',x1:x,x2:x,y1:85,y2:95},g);el('text',{x:x,y:112,'text-anchor':'middle'},g).textContent=i;}})();
+
+/* ---------- axes helpers ---------- */
+function niceStep(range,count){const raw=range/count;const mag=Math.pow(10,Math.floor(Math.log10(raw)));const n=raw/mag;return (n<1.5?1:n<3?2:n<7?5:10)*mag;}
+function domain(min,max,count){
+  if(min>0)min=0;if(max<0)max=0;
+  if(max-min<1e-9){max+=1;}
+  const s=niceStep(max-min,count||4);
+  return [Math.floor(min/s+1e-9)*s,Math.ceil(max/s-1e-9)*s,s];
+}
+function tickList(a,b,s){const out=[];for(let v=a;v<=b+s*1e-6;v+=s)out.push(Math.abs(v)<s*1e-6?0:v);return out;}
+
+/* ---------- Chart ---------- */
+class Chart{
+  constructor(svg,o){
+    this.svg=svg;this.o=Object.assign({w:340,h:214,area:false,xLabel:'t (s)',yLabel:''},o);
+    svg.setAttribute('viewBox','0 0 '+this.o.w+' '+this.o.h);
+    svg.setAttribute('role','img');
+    const h=(e)=>{if(!this.onScrub||!this.sx)return;const r=svg.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*this.o.w;const x=this.x0+(px-this.L)/(this.o.w-this.L-this.R)*(this.x1-this.x0);this.onScrub(clamp(x,this.x0,this.x1));};
+    svg.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons)h(e);});
+    svg.addEventListener('pointerdown',e=>{h(e);});
+  }
+  draw(xs,ys,extra){
+    extra=extra||{};
+    const {w,h}=this.o;const L=46,R=12,T=24,B=30;this.L=L;this.R=R;
+    const svg=this.svg;svg.textContent='';
+    const x0=xs[0],x1=xs[xs.length-1]>x0?xs[xs.length-1]:x0+1;
+    let ymin=Infinity,ymax=-Infinity;for(const y of ys){if(y<ymin)ymin=y;if(y>ymax)ymax=y;}
+    const [y0,y1,ys_]=domain(ymin,ymax,4);
+    const sx=v=>L+(v-x0)/(x1-x0)*(w-L-R);const sy=v=>T+(y1-v)/(y1-y0)*(h-T-B);
+    const xd=domain(x0,x1,5);
+    tickList(y0,y1,ys_).forEach(v=>{el('line',{x1:L,x2:w-R,y1:sy(v),y2:sy(v),class:v===0?'c-zero':'c-grid'},svg);el('text',{x:L-6,y:sy(v)+3.5,class:'c-tick','text-anchor':'end'},svg).textContent=fmt(v,3);});
+    tickList(xd[0],xd[1],xd[2]).forEach(v=>{if(v<x0-1e-9||v>x1+1e-9)return;el('line',{x1:sx(v),x2:sx(v),y1:T,y2:h-B,class:'c-grid'},svg);el('text',{x:sx(v),y:h-B+14,class:'c-tick','text-anchor':'middle'},svg).textContent=fmt(v,3);});
+    el('line',{x1:L,x2:L,y1:T,y2:h-B,class:'c-zero'},svg);
+    el('text',{x:w-R,y:h-3,'text-anchor':'end',class:'c-axt'},svg).textContent=this.o.xLabel;
+    el('text',{x:4,y:13,class:'c-axt'},svg).textContent=this.o.yLabel;
+    (extra.breaks||[]).forEach(b=>{if(b>x0&&b<x1)el('line',{x1:sx(b),x2:sx(b),y1:T,y2:h-B,class:'c-brk'},svg);});
+    if(this.o.area){
+      const mk=(f)=>{let d='M'+sx(xs[0])+' '+sy(0);xs.forEach((x,i)=>{d+='L'+sx(x).toFixed(2)+' '+sy(f(ys[i])).toFixed(2);});d+='L'+sx(xs[xs.length-1])+' '+sy(0)+'Z';return d;};
+      el('path',{d:mk(v=>Math.max(v,0)),class:'c-pos'},svg);
+      el('path',{d:mk(v=>Math.min(v,0)),class:'c-neg'},svg);
+    }
+    let d='';xs.forEach((x,i)=>{d+=(i?'L':'M')+sx(x).toFixed(2)+' '+sy(ys[i]).toFixed(2);});
+    el('path',{d,class:'c-line'},svg);
+    if(extra.marker){el('circle',{cx:sx(extra.marker[0]),cy:sy(extra.marker[1]),r:5,class:'c-curd'},svg);}
+    this.cur=el('g',{},svg);
+    this.cl=el('line',{y1:T,y2:h-B,class:'c-curl'},this.cur);
+    this.cd=el('circle',{r:5,class:'c-curd'},this.cur);
+    this.cbg=el('rect',{rx:4,height:18,class:'c-curbg'},this.cur);
+    this.ct=el('text',{class:'c-curt'},this.cur);
+    this.sx=sx;this.sy=sy;this.x0=x0;this.x1=x1;this.T=T;
+    this.svg.setAttribute('aria-label',(this.o.yLabel||'')+' sem fall af '+(this.o.xLabel||''));
+  }
+  cursor(x,y,label){
+    if(!this.sx)return;const cx=this.sx(x),cy=this.sy(y);
+    this.cl.setAttribute('x1',cx);this.cl.setAttribute('x2',cx);
+    this.cd.setAttribute('cx',cx);this.cd.setAttribute('cy',cy);
+    this.ct.textContent=label;
+    const tw=label.length*6.3+10;const right=cx+tw+8>this.o.w-this.R;
+    const tx=right?cx-tw-6:cx+6;
+    this.cbg.setAttribute('x',tx);this.cbg.setAttribute('y',this.T-20);this.cbg.setAttribute('width',tw);
+    this.ct.setAttribute('x',tx+5);this.ct.setAttribute('y',this.T-7);
+  }
+}
+
+/* ---------- Motion viewer ---------- */
+let vid=0;
+function arrow(g,x1,y1,x2,y2,cls){
+  const len=Math.hypot(x2-x1,y2-y1);if(len<4)return;
+  const ux=(x2-x1)/len,uy=(y2-y1)/len,hs=Math.min(9,len*.6);
+  el('line',{x1,y1,x2:x2-ux*hs*.8,y2:y2-uy*hs*.8,class:cls},g);
+  const bx=x2-ux*hs,by=y2-uy*hs;
+  el('polygon',{points:`${x2},${y2} ${bx-uy*hs*.55},${by+ux*hs*.55} ${bx+uy*hs*.55},${by-ux*hs*.55}`,class:cls,'stroke-width':0},g);
+}
+function Viewer(root,opt){
+  opt=Object.assign({vertical:false,pos:'x'},opt);
+  const id='vw'+(++vid);
+  const P=opt.pos;
+  root.className='viewer';
+  root.innerHTML=`<div class="v-stage ${opt.vertical?'is-vert':''}">
+    <svg class="v-track" aria-label="Hreyfimynd af hlutnum"></svg>
+    <div class="v-charts">
+      <figure><figcaption>${opt.vertical?'Hæð':'Staða'} – tími <span>(${P}–t)</span></figcaption><svg></svg><p class="v-note">Halli = hraði</p></figure>
+      <figure><figcaption>Hraði – tími <span>(v–t)</span></figcaption><svg></svg><p class="v-note">Halli = hröðun · flatarmál = færsla</p></figure>
+      <figure><figcaption>Hröðun – tími <span>(a–t)</span></figcaption><svg></svg><p class="v-note">Flatarmál = hraðabreyting</p></figure>
+    </div></div>
+    <div class="v-ctrl"><button type="button" class="btn v-play">▶ Spila</button>
+    <input type="range" id="${id}-t" min="0" max="1000" value="1000" aria-label="Tími">
+    <output class="v-read" for="${id}-t"></output></div>`;
+  const track=$('.v-track',root);
+  const svgs=$$('.v-charts svg',root);
+  const charts=[new Chart(svgs[0],{yLabel:P+' (m)'}),new Chart(svgs[1],{yLabel:'v (m/s)',area:true}),new Chart(svgs[2],{yLabel:'a (m/s²)',area:true})];
+  const slider=$('input[type=range]',root),read=$('.v-read',root),btn=$('.v-play',root);
+  let M=null,t=0,raf=0,last=0;
+  const units=['m','m/s','m/s²'];
+  charts.forEach(c=>c.onScrub=(tt)=>{stop();setT(tt);});
+  slider.addEventListener('input',()=>{stop();setT(slider.value/1000*M.tEnd);});
+  btn.addEventListener('click',()=>{if(raf){stop();return;}if(t>=M.tEnd-1e-9)t=0;btn.textContent='❚❚ Stöðva';last=0;raf=requestAnimationFrame(step);});
+  function stop(){if(raf){cancelAnimationFrame(raf);raf=0;}btn.textContent='▶ Spila';}
+  function step(ts){if(!last)last=ts;const dt=(ts-last)/1000;last=ts;const speed=M.tEnd/clamp(M.tEnd,2.5,8);t=Math.min(M.tEnd,t+dt*speed);setT(t);if(t<M.tEnd)raf=requestAnimationFrame(step);else stop();}
+  let tr={};
+  function drawTrack(){
+    track.textContent='';
+    let pmin=Infinity,pmax=-Infinity,vmax=1e-9,amax=1e-9;
+    M.samples.forEach(s=>{pmin=Math.min(pmin,s.x);pmax=Math.max(pmax,s.x);vmax=Math.max(vmax,Math.abs(s.v));amax=Math.max(amax,Math.abs(s.a));});
+    if(opt.vertical){pmin=Math.min(pmin,0);}
+    const dm=domain(pmin,pmax,opt.vertical?5:8);
+    if(!opt.vertical){
+      track.setAttribute('viewBox','0 0 640 112');
+      const sx=v=>36+(v-dm[0])/(dm[1]-dm[0])*568;
+      el('line',{x1:sx(dm[0]),x2:sx(dm[1]),y1:76,y2:76,class:'t-line'},track);
+      tickList(dm[0],dm[1],dm[2]).forEach(v=>{el('line',{x1:sx(v),x2:sx(v),y1:71,y2:81,class:'c-zero'},track);el('text',{x:sx(v),y:98,'text-anchor':'middle',class:'c-tick'},track).textContent=fmt(v,3);});
+      el('text',{x:604,y:110,'text-anchor':'end',class:'c-axt'},track).textContent=P+' (m)';
+      el('polygon',{points:`${sx(M.samples[0].x)},68 ${sx(M.samples[0].x)-5},60 ${sx(M.samples[0].x)+5},60`,class:'t-start'},track);
+      tr={sx,vmax,amax,g:el('g',{},track)};
+    } else {
+      track.setAttribute('viewBox','0 0 150 330');
+      const sy=v=>296-(v-dm[0])/(dm[1]-dm[0])*270;
+      el('rect',{x:0,y:sy(0),width:150,height:330-sy(0),class:'t-ground'},track);
+      el('line',{x1:62,x2:62,y1:sy(dm[1]),y2:sy(dm[0]),class:'t-line'},track);
+      tickList(dm[0],dm[1],dm[2]).forEach(v=>{el('line',{x1:57,x2:67,y1:sy(v),y2:sy(v),class:'c-zero'},track);el('text',{x:52,y:sy(v)+3.5,'text-anchor':'end',class:'c-tick'},track).textContent=fmt(v,3);});
+      el('text',{x:6,y:14,class:'c-axt'},track).textContent=P+' (m)';
+      tr={sy,vmax,amax,g:el('g',{},track)};
+    }
+  }
+  function updTrack(s){
+    const g=tr.g;g.textContent='';
+    if(!opt.vertical){
+      const x=tr.sx(s.x);
+      const vl=s.v/tr.vmax*70,al=s.a/tr.amax*45;
+      arrow(g,x,30,x+vl,30,'t-v');if(Math.abs(vl)>=4)el('text',{x:x+vl+(vl>0?6:-14),y:34,class:'t-vl'},g).textContent='v';
+      arrow(g,x,50,x+al,50,'t-a');if(Math.abs(al)>=4)el('text',{x:x+al+(al>0?6:-14),y:54,class:'t-al'},g).textContent='a';
+      el('circle',{cx:x,cy:76,r:10,class:'t-obj'},g);
+    } else {
+      const y=tr.sy(s.x);
+      const vl=-s.v/tr.vmax*60,al=-s.a/tr.amax*45;
+      el('circle',{cx:62,cy:y,r:10,class:'t-obj'},g);
+      arrow(g,92,y,92,y+vl,'t-v');if(Math.abs(vl)>=4)el('text',{x:88,y:y+vl+(vl>0?16:-6),class:'t-vl'},g).textContent='v';
+      arrow(g,122,y,122,y+al,'t-a');if(Math.abs(al)>=4)el('text',{x:118,y:y+al+(al>0?16:-6),class:'t-al'},g).textContent='a';
+    }
+  }
+  function sampleAt(tt){return {t:tt,x:M.pos(tt),v:M.vel(tt),a:M.acc(tt)};}
+  function setT(tt){
+    if(!M)return;t=clamp(tt,0,M.tEnd);const s=sampleAt(t);
+    charts[0].cursor(t,s.x,fmt(s.x,3)+' m');charts[1].cursor(t,s.v,fmt(s.v,3)+' m/s');charts[2].cursor(t,s.a,fmt(s.a,3)+' m/s²');
+    updTrack(s);slider.value=Math.round(t/M.tEnd*1000);
+    read.innerHTML=`<span><b>t</b> = ${fmt(t,3)} s</span><span><b>${P}</b> = ${fmt(s.x,3)} m</span><span><b>v</b> = ${fmt(s.v,3)} m/s</span><span><b>a</b> = ${fmt(s.a,3)} m/s²</span>`;
+  }
+  return {
+    update(model){
+      stop();
+      root.hidden=!model;if(!model){M=null;return;}
+      M=model;const N=360;const ts=[];
+      for(let i=0;i<=N;i++)ts.push(i/N*M.tEnd);
+      (M.breaks||[]).forEach(b=>{if(b>0&&b<M.tEnd){ts.push(b-1e-7*M.tEnd);ts.push(b+1e-7*M.tEnd);}});
+      ts.sort((a,b)=>a-b);
+      M.samples=ts.map(sampleAt);
+      charts[0].draw(ts,M.samples.map(s=>s.x),{breaks:M.breaks});
+      charts[1].draw(ts,M.samples.map(s=>s.v),{breaks:M.breaks});
+      charts[2].draw(ts,M.samples.map(s=>s.a),{breaks:M.breaks});
+      drawTrack();setT(M.tEnd);
+    }
+  };
+}
+/* piecewise-constant-acceleration model */
+function pieceModel(v0,segs,x0){
+  x0=x0||0;let t=0,x=x0,v=v0;const S=[];
+  segs.forEach(sg=>{S.push({t0:t,x0:x,v0:v,a:sg.a,dt:sg.dt});x+=v*sg.dt+.5*sg.a*sg.dt*sg.dt;v+=sg.a*sg.dt;t+=sg.dt;});
+  const find=tt=>{for(let i=S.length-1;i>=0;i--)if(tt>=S[i].t0)return S[i];return S[0];};
+  return {tEnd:t,breaks:S.slice(1).map(s=>s.t0),segs:S,xEnd:x,vEnd:v,
+    pos(tt){const s=find(tt),d=tt-s.t0;return s.x0+s.v0*d+.5*s.a*d*d;},
+    vel(tt){const s=find(tt);return s.v0+s.a*(tt-s.t0);},
+    acc(tt){return find(tt).a;}};
+}
+
+/* ---------- Tabs & navigation ---------- */
+const TABS=['yfirlit','reiknivelar','fraedi','formulur'];
+const SECS=$$('.sec').map(s=>s.id);
+function setDrawer(open){
+  $('#drawer').classList.toggle('open',open);$('#scrim').hidden=!open;
+  $('#menu-btn').setAttribute('aria-expanded',open?'true':'false');
+  if(open)$('#drawer a').focus();
+}
+function showSec(id){
+  showTab('fraedi');
+  $$('.sec').forEach(s=>s.hidden=s.id!==id);
+  $$('#drawer a').forEach(a=>{if(a.dataset.sec===id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  const i=SECS.indexOf(id);
+  const lnk=(j,txt)=>j<0||j>=SECS.length?'<span></span>':`<a href="#${SECS[j]}" data-sec="${SECS[j]}">${txt}</a>`;
+  $('#pager').innerHTML=lnk(i-1,'← Fyrri undirkafli')+lnk(i+1,'Næsti undirkafli →');
+  window.scrollTo(0,0);
+}
+$('#menu-btn').addEventListener('click',()=>setDrawer(!$('#drawer').classList.contains('open')));
+$('#scrim').addEventListener('click',()=>setDrawer(false));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#drawer').classList.contains('open')){setDrawer(false);$('#menu-btn').focus();}});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[data-sec],a[data-page]');if(!a)return;
+  e.preventDefault();setDrawer(false);
+  if(a.dataset.sec){showSec(a.dataset.sec);setHash(a.dataset.sec);}
+  else{showTab(a.dataset.page);setHash(a.dataset.page);window.scrollTo(0,0);}
+});
+$$('details.try').forEach(d=>{
+  const w=document.createElement('div');w.className='try';w.innerHTML='<h3>Prófaðu þig</h3>';
+  const ol=$('ol',d);
+  $$('li',ol).forEach(li=>{
+    const a=$('.a',li),br=$('br',li);if(br)br.remove();a.hidden=true;
+    const b=document.createElement('button');b.type='button';b.className='reveal';b.textContent='Sýna svar';
+    b.addEventListener('click',()=>{a.hidden=!a.hidden;b.textContent=a.hidden?'Sýna svar':'Fela svar';});
+    li.insertBefore(b,a);
+  });
+  w.appendChild(ol);d.replaceWith(w);
+});
+const CALCS=['hradi','jofnur','fall','stodvun','hlutar'];
+function showTab(name){
+  $$('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name?'true':'false'));
+  TABS.forEach(n=>{$('#p-'+n).hidden=n!==name;});
+}
+function showCalc(name){
+  $$('.calcnav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.calc===name?'true':'false'));
+  $$('section.calc').forEach(s=>s.hidden=s.dataset.calc!==name);
+  if(calcInit[name])calcInit[name]();
+}
+function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){}}
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{showTab(b.dataset.tab);setHash(b.dataset.tab);if(b.dataset.tab==='reiknivelar'){const cur=$('.calcnav button[aria-selected="true"]');showCalc(cur.dataset.calc);}}));
+$$('.calcnav button').forEach(b=>b.addEventListener('click',()=>{showCalc(b.dataset.calc);setHash(b.dataset.calc);}));
+$$('.goto').forEach(b=>b.addEventListener('click',()=>{
+  const c=b.dataset.goto;showTab('reiknivelar');showCalc(c);setHash(c);
+  if(b.dataset.preset&&presetFns[c])presetFns[c](b.dataset.preset);
+  window.scrollTo(0,0);
+}));
+const calcInit={};const presetFns={};
+
+/* ---------- Unit converter ---------- */
+(function(){
+  const k=$('#cv-kmh'),s=$('#cv-ms');
+  k.addEventListener('input',()=>{const n=parse(k.value);s.value=n==null||isNaN(n)?'':fmt(n/3.6,5).replace(/\./g,'');});
+  s.addEventListener('input',()=>{const n=parse(s.value);k.value=n==null||isNaN(n)?'':fmt(n*3.6,5).replace(/\./g,'');});
+})();
+
+/* ---------- 1. Hraði ---------- */
+(function(){
+  let find='v';let view=null;
+  const ids=['h-d','h-t','h-v','h-du','h-tu','h-vu'];
+  const out=$('#h-out');
+  const uName=(sel)=>sel.options[sel.selectedIndex].text;
+  function setFind(f){find=f;$$('#h-find button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===f?'true':'false'));
+    ['d','t','v'].forEach(k=>{const i=$('#h-'+k);i.disabled=k===f;if(k===f){i.value='';i.placeholder='?';}else i.placeholder='';});run();}
+  $$('#h-find button').forEach(b=>b.addEventListener('click',()=>setFind(b.dataset.v)));
+  ids.forEach(id=>$('#'+id).addEventListener(id.endsWith('u')?'change':'input',run));
+  function run(){
+    if(!view)view=Viewer($('#h-view'),{});
+    const du=+$('#h-du').value,tu=+$('#h-tu').value,vu=+$('#h-vu').value;
+    const D=parse($('#h-d').value),T=parse($('#h-t').value),V=parse($('#h-v').value);
+    ['d','t','v'].forEach(k=>$('#h-'+k).classList.toggle('bad',Number.isNaN({d:D,t:T,v:V}[k])));
+    const dN=uName($('#h-du')),tN=uName($('#h-tu')),vN=uName($('#h-vu'));
+    let d,t,v,steps=[],main;
+    const need=(x,n)=>x==null||Number.isNaN(x)?n:null;
+    const miss=find==='v'?(need(D,'vegalengd')||need(T,'tíma')):find==='d'?(need(V,'hraða')||need(T,'tíma')):(need(V,'hraða')||need(D,'vegalengd'));
+    if(miss){out.innerHTML=`<div class="msg">Sláðu inn ${miss} til að reikna.</div>`;view.update(null);return;}
+    const conv=[];
+    if(find!=='d'){d=D*du;if(du!==1)conv.push(`${fmt(D)} ${dN} = ${fmt(d)} m`);}
+    if(find!=='t'){t=T*tu;if(tu!==1)conv.push(`${fmt(T)} ${tN} = ${fmt(t)} s`);}
+    if(find!=='v'){v=V*vu;if(vu!==1)conv.push(`${fmt(V)} km/klst ÷ 3,6 = ${fmt(v)} m/s`);}
+    if(conv.length)steps.push({t:'Breytum í SI-einingar',m:conv.join('&nbsp;&nbsp;·&nbsp;&nbsp;')});
+    if(find==='v'){
+      if(t===0){out.innerHTML='<div class="msg err">Tíminn má ekki vera 0.</div>';view.update(null);return;}
+      v=d/t;steps.push({t:'Formúlan',m:'<var>v̄</var> = <var>Δx</var> / <var>Δt</var>'});
+      steps.push({t:'Setjum inn tölur',m:`<var>v̄</var> = ${fmt(d)} m / ${fmt(t)} s = <b>${fmt(v)} m/s</b>`});
+      steps.push({t:'Í km/klst',m:`${fmt(v)} m/s · 3,6 = ${fmt(v*3.6)} km/klst`});
+      main={k:'Meðalhraði',v:fmt(v,3),u:'m/s',alt:`= ${fmt(v*3.6,3)} km/klst`};
+    } else if(find==='d'){
+      d=v*t;steps.push({t:'Einangrum Δx',m:'<var>v̄</var> = <var>Δx</var> / <var>Δt</var> &nbsp;→&nbsp; <var>Δx</var> = <var>v̄</var> · <var>Δt</var>'});
+      steps.push({t:'Setjum inn tölur',m:`<var>Δx</var> = ${fmt(v)} m/s · ${fmt(t)} s = <b>${fmt(d)} m</b>`});
+      main={k:'Vegalengd',v:fmt(d,3),u:'m',alt:Math.abs(d)>=1000?`= ${fmt(d/1000,3)} km`:''};
+    } else {
+      if(v===0){out.innerHTML='<div class="msg err">Hraðinn má ekki vera 0 þegar tíminn er fundinn.</div>';view.update(null);return;}
+      t=d/v;steps.push({t:'Einangrum Δt',m:'<var>v̄</var> = <var>Δx</var> / <var>Δt</var> &nbsp;→&nbsp; <var>Δt</var> = <var>Δx</var> / <var>v̄</var>'});
+      steps.push({t:'Setjum inn tölur',m:`<var>Δt</var> = ${fmt(d)} m / ${fmt(v)} m/s = <b>${fmt(t)} s</b>`});
+      if(t<0)steps.push({t:'Athugið',m:'Neikvæður tími: færslan og hraðinn hafa gagnstæð formerki.'});
+      main={k:'Tími',v:fmt(t,3),u:'s',alt:Math.abs(t)>=60?`= ${fmt(t/60,3)} mín`+(Math.abs(t)>=3600?` = ${fmt(t/3600,3)} klst`:''):''};
+    }
+    out.innerHTML=`<div class="result"><div class="k">${main.k}</div><div class="v">${main.v} <small>${main.u}</small></div><div class="alt">${main.alt||''}</div></div>
+      <ol class="wsteps">${steps.map(s=>`<li><div><div class="t">${s.t}</div><div class="m">${s.m}</div></div></li>`).join('')}</ol>`;
+    if(t>0&&isFinite(t))view.update(pieceModel(v,[{a:0,dt:t}]));else view.update(null);
+  }
+  const P={gong:['v',5.77,1000,6,60,null,1],straeto:['v',12,1000,20,60,null,0.2777777777777778],taug:['t',1.1,1,null,1,18,1],tungl:['d',null,1000,1.28,1,300000000,1]};
+  presetFns.hradi=function(k){const q=P[k];if(!q)return;$('#h-du').value=String(q[2]);$('#h-tu').value=String(q[4]);$('#h-vu').value=String(q[6]);
+    setVal('h-d',q[1]);setVal('h-t',q[3]);setVal('h-v',q[5]);setFind(q[0]);
+    if(k==='tungl')out.insertAdjacentHTML('afterbegin','<div class="msg" style="margin-bottom:12px">Bergmálið tók 2,56 s fram og til baka, svo útvarpsbylgjurnar voru 1,28 s aðra leið.</div>');};
+  $$('[data-hp]').forEach(b=>b.addEventListener('click',()=>presetFns.hradi(b.dataset.hp)));
+  calcInit.hradi=function(){if(!view){setFind('v');}calcInit.hradi=null;};
+})();
+
+/* ---------- 2. Hreyfijöfnur ---------- */
+(function(){
+  const VN={d:'<var>Δx</var>',v0:'<var>v</var><sub>0</sub>',v:'<var>v</var>',a:'<var>a</var>',t:'<var>t</var>'};
+  const VT={d:'Δx',v0:'v₀',v:'v',a:'a',t:'t'};
+  const VU={d:'m',v0:'m/s',v:'m/s',a:'m/s²',t:'s'};
+  const KEYS=['d','v0','v','a','t'];
+  const PLAN={'d,v':[[1,'v'],[2,'d']],'d,t':[[3,'d'],[1,'t']],'a,d':[[1,'a'],[4,'d']],'d,v0':[[1,'v0'],[4,'d']],'t,v':[[2,'t'],[1,'v']],'a,v':[[2,'a'],[1,'v']],'v,v0':[[2,'v0'],[1,'v']],'a,t':[[4,'t'],[1,'a'],[3,'a']],'t,v0':[[3,'v0'],[1,'t'],[4,'t']],'a,v0':[[4,'v0'],[1,'a']]};
+  const MISS={1:'d',2:'v',3:'t',4:'a'};
+  function E(msg){throw new Error(msg);}
+  function solveFor(eq,tg,k){
+    const {d,v0,v,a,t}=k;
+    switch(eq+tg){
+      case '1v':return {vals:[v0+a*t],form:'<var>v</var> = <var>v</var><sub>0</sub> + <var>at</var>',sub:`<var>v</var> = ${fmt(v0)} + ${p(a)} · ${p(t)}`};
+      case '1v0':return {vals:[v-a*t],form:'<var>v</var><sub>0</sub> = <var>v</var> − <var>at</var>',sub:`<var>v</var><sub>0</sub> = ${fmt(v)} − ${p(a)} · ${p(t)}`};
+      case '1a':if(t===0)E('t = 0, svo ekki er hægt að finna a.');return {vals:[(v-v0)/t],form:'<var>a</var> = (<var>v</var> − <var>v</var><sub>0</sub>) / <var>t</var>',sub:`<var>a</var> = (${fmt(v)} − ${p(v0)}) / ${p(t)}`};
+      case '1t':if(a===0)E('a = 0, svo jafna 1 gefur ekki t.');return {vals:[(v-v0)/a],form:'<var>t</var> = (<var>v</var> − <var>v</var><sub>0</sub>) / <var>a</var>',sub:`<var>t</var> = (${fmt(v)} − ${p(v0)}) / ${p(a)}`};
+      case '2d':return {vals:[v0*t+.5*a*t*t],form:'<var>Δx</var> = <var>v</var><sub>0</sub><var>t</var> + ½<var>at</var>²',sub:`<var>Δx</var> = ${p(v0)} · ${p(t)} + ½ · ${p(a)} · ${p(t)}²`};
+      case '2v0':if(t===0)E('t = 0.');return {vals:[(d-.5*a*t*t)/t],form:'<var>v</var><sub>0</sub> = (<var>Δx</var> − ½<var>at</var>²) / <var>t</var>',sub:`<var>v</var><sub>0</sub> = (${fmt(d)} − ½ · ${p(a)} · ${p(t)}²) / ${p(t)}`};
+      case '2a':if(t===0)E('t = 0.');return {vals:[2*(d-v0*t)/(t*t)],form:'<var>a</var> = 2(<var>Δx</var> − <var>v</var><sub>0</sub><var>t</var>) / <var>t</var>²',sub:`<var>a</var> = 2 · (${fmt(d)} − ${p(v0)} · ${p(t)}) / ${p(t)}²`};
+      case '2t':{
+        if(a===0){if(v0===0)E('Bæði a og v₀ eru 0: hluturinn hreyfist ekki.');return {vals:[d/v0],form:'<var>t</var> = <var>Δx</var> / <var>v</var><sub>0</sub> (því <var>a</var> = 0)',sub:`<var>t</var> = ${fmt(d)} / ${p(v0)}`};}
+        const A=a/2,B=v0,C=-d,D=B*B-4*A*C;
+        if(D<0)E('Hluturinn nær aldrei þessari stöðu (neikvætt undir rótinni). Athugaðu formerkin.');
+        const r1=(-B+Math.sqrt(D))/(2*A),r2=(-B-Math.sqrt(D))/(2*A);
+        return {vals:[r1,r2],form:'½<var>at</var>² + <var>v</var><sub>0</sub><var>t</var> − <var>Δx</var> = 0 &nbsp;→&nbsp; <var>t</var> = (−<var>B</var> ± √(<var>B</var>² − 4<var>AC</var>)) / 2<var>A</var>',sub:`<var>A</var> = ${fmt(A)}, <var>B</var> = ${fmt(B)}, <var>C</var> = ${fmt(C)} &nbsp;→&nbsp; <var>t</var> = ${fmt(Math.max(r1,r2))} eða <var>t</var> = ${fmt(Math.min(r1,r2))}`};}
+      case '3v':{const D=v0*v0+2*a*d;if(D<0)E('Neikvætt undir rótinni: hluturinn nær ekki þessari stöðu.');const r=Math.sqrt(D);return {vals:[r,-r],form:'<var>v</var> = ±√(<var>v</var><sub>0</sub>² + 2<var>aΔx</var>)',sub:`<var>v</var> = ±√(${p(v0)}² + 2 · ${p(a)} · ${p(d)}) = ±${fmt(r)}`};}
+      case '3v0':{const D=v*v-2*a*d;if(D<0)E('Neikvætt undir rótinni: þessar tölur passa ekki saman.');const r=Math.sqrt(D);return {vals:[r,-r],form:'<var>v</var><sub>0</sub> = ±√(<var>v</var>² − 2<var>aΔx</var>)',sub:`<var>v</var><sub>0</sub> = ±√(${p(v)}² − 2 · ${p(a)} · ${p(d)}) = ±${fmt(r)}`};}
+      case '3a':if(d===0)E('Δx = 0, svo jafna 3 gefur ekki a.');return {vals:[(v*v-v0*v0)/(2*d)],form:'<var>a</var> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2<var>Δx</var>',sub:`<var>a</var> = (${p(v)}² − ${p(v0)}²) / (2 · ${p(d)})`};
+      case '3d':if(a===0)E('a = 0, svo jafna 3 gefur ekki Δx. Með föstum hraða þarf að gefa t.');return {vals:[(v*v-v0*v0)/(2*a)],form:'<var>Δx</var> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2<var>a</var>',sub:`<var>Δx</var> = (${p(v)}² − ${p(v0)}²) / (2 · ${p(a)})`};
+      case '4d':return {vals:[.5*(v0+v)*t],form:'<var>Δx</var> = ½(<var>v</var><sub>0</sub> + <var>v</var>)<var>t</var>',sub:`<var>Δx</var> = ½ · (${fmt(v0)} + ${p(v)}) · ${p(t)}`};
+      case '4t':if(v0+v===0)E('v₀ + v = 0, svo jafna 4 gefur ekki t.');return {vals:[2*d/(v0+v)],form:'<var>t</var> = 2<var>Δx</var> / (<var>v</var><sub>0</sub> + <var>v</var>)',sub:`<var>t</var> = 2 · ${p(d)} / (${fmt(v0)} + ${p(v)})`};
+      case '4v0':if(t===0)E('t = 0.');return {vals:[2*d/t-v],form:'<var>v</var><sub>0</sub> = 2<var>Δx</var> / <var>t</var> − <var>v</var>',sub:`<var>v</var><sub>0</sub> = 2 · ${p(d)} / ${p(t)} − ${p(v)}`};
+      case '4v':if(t===0)E('t = 0.');return {vals:[2*d/t-v0],form:'<var>v</var> = 2<var>Δx</var> / <var>t</var> − <var>v</var><sub>0</sub>',sub:`<var>v</var> = 2 · ${p(d)} / ${p(t)} − ${p(v0)}`};
+    }
+    E('Óþekkt tilvik.');
+  }
+  function check(eq,k){
+    const {d,v0,v,a,t}=k;
+    if(eq===1)return [VN.v,v,v0+a*t,'<var>v</var><sub>0</sub> + <var>at</var>'];
+    if(eq===2)return [VN.d,d,v0*t+.5*a*t*t,'<var>v</var><sub>0</sub><var>t</var> + ½<var>at</var>²'];
+    if(eq===3)return [VN.v+'²',v*v,v0*v0+2*a*d,'<var>v</var><sub>0</sub>² + 2<var>aΔx</var>'];
+    return [VN.d,d,.5*(v0+v)*t,'½(<var>v</var><sub>0</sub> + <var>v</var>)<var>t</var>'];
+  }
+  function solve(k){
+    const unk=KEYS.filter(n=>k[n]==null);
+    const kc=5-unk.length;
+    if(unk.length!==2)return {msg:kc<3?`Fylltu inn þrjár stærðir. Núna ${kc===1?'er 1 þekkt':'eru '+kc+' þekktar'}.`:`Of margar stærðir gefnar (${kc}). Skildu tvær eftir tómar.`};
+    const plan=PLAN[unk.slice().sort().join(',')];
+    const first=plan[0],seconds=plan.slice(1);
+    let r1;try{r1=solveFor(first[0],first[1],k);}catch(e){return {error:e.message}}
+    const c=[];let lastErr='';
+    r1.vals.forEach(val=>{
+      const k2=Object.assign({},k,{[first[1]]:val});let r2=null;
+      for(const s of seconds){try{r2=solveFor(s[0],s[1],k2);r2.step=s;break;}catch(e){lastErr=e.message;}}
+      if(!r2)return;
+      r2.vals.forEach(v2=>c.push({k:Object.assign({},k2,{[r2.step[1]]:v2}),r2}));
+    });
+    const valid=c.filter(x=>x.k.t>=-1e-9&&KEYS.every(n=>isFinite(x.k[n])));
+    if(!valid.length)return {error:lastErr||'Engin lausn fæst með jákvæðum tíma. Athugaðu formerkin: t.d. þarf a að vera neikvætt ef hluturinn hægir á sér í jákvæða stefnu.'};
+    valid.sort((x,y)=>x.k.t-y.k.t);
+    const prim=valid.find(x=>x.k.t>1e-9)||valid[0];
+    const others=valid.filter(x=>x!==prim&&x.k.t>1e-9&&KEYS.some(n=>Math.abs(x.k[n]-prim.k[n])>1e-9*Math.max(1,Math.abs(prim.k[n]))));
+    return {unk,first,r1,prim,others};
+  }
+  let view=null;
+  function run(){
+    if(!view)view=Viewer($('#j-view'),{});
+    const k={};let bad=false;
+    KEYS.forEach(n=>{const i=$('#j-'+n);const v=parse(i.value);i.classList.toggle('bad',Number.isNaN(v));if(Number.isNaN(v))bad=true;k[n]=Number.isNaN(v)?null:v;});
+    const out=$('#j-out');
+    $$('#j-eqs .eqcard').forEach(c=>c.classList.remove('used'));
+    const known=KEYS.filter(n=>k[n]!=null);
+    KEYS.forEach(n=>{const b=$('#jb-'+n);b.className='badge '+(k[n]!=null?'k':'u');b.textContent=k[n]!=null?'þekkt':'óþekkt';});
+    if(bad){out.innerHTML='<div class="msg err">Einn reitur inniheldur ekki tölu. Notaðu kommu eða punkt fyrir aukastafi.</div>';view.update(null);return;}
+    if(k.t!=null&&k.t<0){out.innerHTML='<div class="msg err">Tíminn t á að vera jákvæður (klukkan byrjar í 0).</div>';view.update(null);return;}
+    const r=solve(k);
+    if(r.msg){out.innerHTML=`<div class="msg">${r.msg}</div>`;view.update(null);return;}
+    if(r.error){out.innerHTML=`<div class="msg err">${r.error}</div>`;view.update(null);return;}
+    const P=r.prim.k,u=r.unk;
+    const s2=r.prim.r2.step;
+    [r.first[0],s2[0]].forEach(e=>$(`#j-eqs .eqcard[data-eq="${e}"]`).classList.add('used'));
+    u.forEach(n=>{const b=$('#jb-'+n);b.className='badge c';b.textContent='reiknað';});
+    const other=u.find(n=>n!==r.first[1]);
+    let html=`<div class="stats" style="margin:14px 0">${u.map(n=>`<div class="stat hl"><div class="k">${VT[n]}</div><div class="v">${fmt(P[n],3)} <small>${VU[n]}</small></div></div>`).join('')}</div>`;
+    html+='<ol class="wsteps">';
+    html+=`<li><div><div class="t">Þekkt: ${known.map(n=>VN[n]+' = '+fmt(k[n])+' '+VU[n]).join(', ')}</div><div class="why">Óþekkt: ${u.map(n=>VN[n]).join(' og ')}.</div></div></li>`;
+    html+=`<li><div><div class="t">Finnum ${VN[r.first[1]]} með jöfnu ${r.first[0]}</div><div class="why">Jafna ${r.first[0]} inniheldur ekki ${VN[MISS[r.first[0]]]}${MISS[r.first[0]]===other?', sem er hin óþekkta stærðin':''}, svo ${VN[r.first[1]]} er eina óþekkta stærðin í henni.</div><div class="m">${r.r1.form}</div><div class="m">${r.r1.sub}</div>`;
+    if(r.r1.vals.length>1)html+=`<div class="why">Tvær lausnir. Veljum ${VN[r.first[1]]} = <b>${fmt(P[r.first[1]])} ${VU[r.first[1]]}</b> því hún gefur minnsta jákvæða tímann <var>t</var>${r.others.length?' (sjá hina lausnina neðst)':''}.</div>`;
+    else html+=`<div class="m">${VN[r.first[1]]} = <b>${fmt(P[r.first[1]])} ${VU[r.first[1]]}</b></div>`;
+    html+='</div></li>';
+    html+=`<li><div><div class="t">Finnum ${VN[s2[1]]} með jöfnu ${s2[0]}</div><div class="m">${r.prim.r2.form}</div><div class="m">${r.prim.r2.sub} = <b>${fmt(P[s2[1]])} ${VU[s2[1]]}</b></div></div></li>`;
+    const used=[r.first[0],s2[0]];const ce=[1,2,3,4].find(e=>!used.includes(e));
+    const ch=check(ce,P);const okc=Math.abs(ch[1]-ch[2])<=1e-6*Math.max(1,Math.abs(ch[1]));
+    html+=`<li><div><div class="t">Prófun með jöfnu ${ce}</div><div class="m">${ch[3]} = ${fmt(ch[2])} &nbsp;og&nbsp; ${ch[0]} = ${fmt(ch[1])} &nbsp;<span class="ok">${okc?'✓ passar':'✗'}</span></div></div></li>`;
+    const sgn=P.v0*P.a;
+    if(P.a!==0&&P.v0!==0)html+=`<li><div><div class="t">Túlkun</div><div class="why">${sgn>0?'v₀ og a hafa sama formerki, svo ferðin eykst í byrjun.':'v₀ og a hafa gagnstæð formerki, svo hluturinn hægir á sér í byrjun.'}${P.v0*P.v<0?' Hraðinn skiptir um formerki: hluturinn snýr við á leiðinni.':''}</div></div></li>`;
+    html+='</ol>';
+    if(r.others.length){const o=r.others[0].k;html+=`<div class="msg" style="margin-top:12px">Önnur lausn sem passar líka: ${u.map(n=>VT[n]+' = '+fmt(o[n],3)+' '+VU[n]).join(', ')}. Veldu þá sem passar við aðstæðurnar.</div>`;}
+    out.innerHTML=html;
+    if(P.t>1e-9)view.update(pieceModel(P.v0,[{a:P.a,dt:P.t}]));else view.update(null);
+  }
+  KEYS.forEach(n=>$('#j-'+n).addEventListener('input',run));
+  $('#j-clear').addEventListener('click',()=>{KEYS.forEach(n=>$('#j-'+n).value='');run();});
+  const PR={flugvel:{v0:0,v:80,a:2},bretti:{v0:1,a:1.5,t:4},rafbill:{v0:0,v:27.78,t:4},straeto:{v0:15,v:0,t:5},hjol:{v0:4,v:10,d:30},bolti:{v0:12,a:-9.8,d:0}};
+  presetFns.jofnur=function(key){const q=PR[key];if(!q)return;KEYS.forEach(n=>setVal('j-'+n,q[n]==null?null:q[n]));run();};
+  $$('[data-jp]').forEach(b=>b.addEventListener('click',()=>presetFns.jofnur(b.dataset.jp)));
+  calcInit.jofnur=function(){presetFns.jofnur('bretti');calcInit.jofnur=null;};
+})();
+
+/* ---------- 3. Frjálst fall ---------- */
+(function(){
+  let view=null;
+  function run(){
+    if(!view)view=Viewer($('#f-view'),{vertical:true,pos:'y'});
+    const v0=parse($('#f-v0').value),h=parse($('#f-h').value),g=+$('#f-g').value;
+    const out=$('#f-out');
+    $('#f-v0').classList.toggle('bad',Number.isNaN(v0));$('#f-h').classList.toggle('bad',Number.isNaN(h));
+    if(v0==null||h==null||Number.isNaN(v0)||Number.isNaN(h)){out.innerHTML='<div class="msg">Sláðu inn upphafshraða og upphafshæð.</div>';view.update(null);return;}
+    if(h<0){out.innerHTML='<div class="msg err">Upphafshæðin á að vera 0 eða meiri (hæð yfir jörðu).</div>';view.update(null);return;}
+    if(h===0&&v0<=0){out.innerHTML='<div class="msg">Hluturinn er þegar á jörðinni. Kastaðu honum upp (jákvæður v₀) eða settu hann ofar.</div>';view.update(null);return;}
+    const A=g/2,B=-v0,C=-h;const D=B*B-4*A*C;
+    const tl=(-B+Math.sqrt(D))/(2*A),t2=(-B-Math.sqrt(D))/(2*A);
+    const vl=v0-g*tl;
+    const tup=v0>0?v0/g:0,ymax=h+(v0>0?v0*v0/(2*g):0);
+    let st='<ol class="wsteps">';
+    st+=`<li><div><div class="t">Hnitakerfi og þekktar stærðir</div><div class="why">Upp er jákvætt. <var>y</var><sub>0</sub> = 0 þar sem hluturinn byrjar, svo jörðin er í <var>y</var> = ${fmt(-h)} m.</div><div class="m"><var>v</var><sub>0</sub> = ${fmt(v0)} m/s, &nbsp;<var>a</var> = −<var>g</var> = ${fmt(-g)} m/s²</div></div></li>`;
+    if(v0>0){
+      st+=`<li><div><div class="t">Mesta hæð: efst er <var>v</var> = 0 (jafnan án <var>t</var>)</div><div class="m">0 = <var>v</var><sub>0</sub>² − 2<var>g</var>(<var>y</var> − <var>y</var><sub>0</sub>) &nbsp;→&nbsp; <var>y</var> − <var>y</var><sub>0</sub> = <var>v</var><sub>0</sub>² / 2<var>g</var> = ${p(v0)}² / (2 · ${fmt(g)}) = <b>${fmt(v0*v0/(2*g))} m</b></div></div></li>`;
+      st+=`<li><div><div class="t">Tími upp (jafnan án <var>Δy</var>)</div><div class="m"><var>t</var><sub>upp</sub> = <var>v</var><sub>0</sub> / <var>g</var> = ${fmt(v0)} / ${fmt(g)} = <b>${fmt(tup)} s</b></div></div></li>`;
+    }
+    if(h===0){
+      st+=`<li><div><div class="t">Lendir í sömu hæð: samhverfa</div><div class="m"><var>t</var> = 2<var>t</var><sub>upp</sub> = <b>${fmt(tl)} s</b></div></div></li>`;
+    } else if(v0===0){
+      st+=`<li><div><div class="t">Falltími (<var>v</var><sub>0</sub> = 0, jafnan án <var>v</var>)</div><div class="m">−${fmt(h)} = −½<var>gt</var>² &nbsp;→&nbsp; <var>t</var> = √(2<var>h</var> / <var>g</var>) = √(2 · ${fmt(h)} / ${fmt(g)}) = <b>${fmt(tl)} s</b></div></div></li>`;
+    } else {
+      st+=`<li><div><div class="t">Tími á lofti: <var>t</var> í öðru veldi</div><div class="m">${fmt(-h)} = ${fmt(v0)}<var>t</var> − ½ · ${fmt(g)}<var>t</var>² &nbsp;→&nbsp; ${fmt(A)}<var>t</var>² ${B<0?'−':'+'} ${fmt(Math.abs(B))}<var>t</var> − ${fmt(h)} = 0</div><div class="m"><var>A</var> = ${fmt(A)}, <var>B</var> = ${fmt(B)}, <var>C</var> = ${fmt(C)} &nbsp;→&nbsp; <var>t</var> = <b>${fmt(tl)} s</b> &nbsp;<span style="color:var(--muted)">(hin lausnin, ${fmt(t2)} s, á ekki við)</span></div></div></li>`;
+    }
+    st+=`<li><div><div class="t">Hraði við lendingu</div><div class="m"><var>v</var> = <var>v</var><sub>0</sub> − <var>gt</var> = ${fmt(v0)} − ${fmt(g)} · ${fmt(tl)} = <b>${fmt(vl)} m/s</b></div><div class="why">Mínusinn merkir að hraðinn vísar niður. ${fmt(Math.abs(vl),3)} m/s ≈ ${fmt(Math.abs(vl)*3.6,3)} km/klst.</div></div></li>`;
+    st+='</ol>';
+    out.innerHTML=`<div class="stats" style="margin-bottom:14px">
+      <div class="stat"><div class="k">Mesta hæð yfir jörðu</div><div class="v">${fmt(ymax,3)} <small>m</small></div></div>
+      <div class="stat"><div class="k">Tími upp</div><div class="v">${fmt(tup,3)} <small>s</small></div></div>
+      <div class="stat hl"><div class="k">Tími á lofti</div><div class="v">${fmt(tl,3)} <small>s</small></div></div>
+      <div class="stat hl"><div class="k">Lendingarhraði</div><div class="v">${fmt(vl,3)} <small>m/s</small></div></div></div>`+st;
+    view.update(pieceModel(v0,[{a:-g,dt:tl}],h));
+  }
+  function rt(){const d=parse($('#f-d').value),g=+$('#f-g').value;const o=$('#f-rt');
+    if(d==null||Number.isNaN(d)||d<0){o.textContent='Sláðu inn fallvegalengd í cm.';return;}
+    const t=Math.sqrt(2*d/100/g);o.innerHTML=`<span class="math"><var>t</var> = √(2 · ${fmt(d/100)} m / ${fmt(g)} m/s²)</span> = <b>${fmt(t,2)} s</b>`;}
+  ['f-v0','f-h'].forEach(id=>$('#'+id).addEventListener('input',run));
+  $('#f-g').addEventListener('change',()=>{run();rt();});
+  $('#f-d').addEventListener('input',rt);
+  const PR={skogafoss:[0,60,'9.80'],strokkur:[19.8,0,'9.80'],steinn:[5,10,'9.80'],bolti:[12,0,'9.80'],tungl:[0,1.6,'1.62']};
+  presetFns.fall=function(k){const q=PR[k];if(!q)return;setVal('f-v0',q[0]);setVal('f-h',q[1]);$('#f-g').value=q[2];run();rt();};
+  $$('[data-fp]').forEach(b=>b.addEventListener('click',()=>presetFns.fall(b.dataset.fp)));
+  calcInit.fall=function(){run();rt();calcInit.fall=null;};
+})();
+
+/* ---------- 4. Stöðvun ---------- */
+(function(){
+  let view=null,curve=null;
+  const SURF=[['Þurr vegur',7.0],['Blautur',5.0],['Snjór',3.0],['Svell',1.5]];
+  function getA(){const s=$('#s-surf').value;$('#s-custom-wrap').hidden=s!=='custom';return s==='custom'?parse($('#s-a').value):+s;}
+  function run(){
+    if(!view)view=Viewer($('#s-view'),{});
+    if(!curve)curve=new Chart($('#s-curve'),{w:640,h:230,xLabel:'hraði (km/klst)',yLabel:'stöðvunarvegalengd (m)'});
+    const kmh=parse($('#s-v').value),tr=parse($('#s-tr').value);let a=getA();
+    const out=$('#s-out');
+    if([kmh,tr,a].some(x=>x==null||Number.isNaN(x))||kmh<=0||tr<0||a<=0){out.innerHTML='<div class="msg">Sláðu inn jákvæðan hraða, viðbragðstíma og stærð hemlunarhröðunar.</div>';view.update(null);$('#s-bars').innerHTML='';return;}
+    const v0=kmh/3.6,d1=v0*tr,d2=v0*v0/(2*a),tb=v0/a;
+    out.innerHTML=`<div class="result"><div class="k">Stöðvunarvegalengd</div><div class="v">${fmt(d1+d2,3)} <small>m</small></div><div class="alt">Tekur ${fmt(tr+tb,3)} s alls</div></div>
+     <ol class="wsteps">
+      <li><div><div class="t">Í SI-einingar</div><div class="m"><var>v</var><sub>0</sub> = ${fmt(kmh)} / 3,6 = ${fmt(v0)} m/s, &nbsp;<var>a</var><sub>2</sub> = −${fmt(a)} m/s²</div></div></li>
+      <li><div><div class="t">Hluti 1 · viðbragð, fastur hraði (<var>a</var> = 0)</div><div class="m"><var>Δx</var><sub>1</sub> = <var>v</var><sub>0</sub><var>t</var><sub>1</sub> = ${fmt(v0)} · ${fmt(tr)} = <b>${fmt(d1)} m</b></div></div></li>
+      <li><div><div class="t">Hluti 2 · hemlun, jafna 3 (án <var>t</var>), <var>v</var> = 0</div><div class="m"><var>Δx</var><sub>2</sub> = (<var>v</var>² − <var>v</var><sub>0</sub>²) / 2<var>a</var><sub>2</sub> = (0 − ${fmt(v0)}²) / (2 · (−${fmt(a)})) = <b>${fmt(d2)} m</b></div></div></li>
+      <li><div><div class="t">Samtals</div><div class="m"><var>Δx</var> = ${fmt(d1)} + ${fmt(d2)} = <b>${fmt(d1+d2)} m</b></div><div class="why">Hemlunarvegalengdin vex með hraðanum í öðru veldi, en viðbragðsvegalengdin bara línulega.</div></div></li>
+     </ol>`;
+    const rows=SURF.map(s=>({n:s[0],a:s[1],sel:Math.abs(s[1]-a)<1e-9}));
+    if(!rows.some(r=>r.sel))rows.push({n:'Þitt gildi',a,sel:true});
+    rows.forEach(r=>{r.d1=d1;r.d2=v0*v0/(2*r.a);});
+    const mx=Math.max(...rows.map(r=>r.d1+r.d2));
+    $('#s-bars').innerHTML=rows.map(r=>`<div class="bar-row ${r.sel?'sel':''}"><span class="nm">${r.n} · ${fmt(r.a,2)}</span><div class="bar"><i class="r" style="width:${r.d1/mx*80}%" title="Viðbragð ${fmt(r.d1,3)} m"></i><i class="b" style="width:${r.d2/mx*80}%" title="Hemlun ${fmt(r.d2,3)} m"></i><em>${fmt(r.d1+r.d2,3)} m</em></div></div>`).join('');
+    const xs=[],ys=[];for(let s=0;s<=150;s+=2){const vv=s/3.6;xs.push(s);ys.push(vv*tr+vv*vv/(2*a));}
+    curve.draw(xs,ys,{marker:[clamp(kmh,0,150),d1+d2]});
+    curve.onScrub=(x)=>{const vv=x/3.6;curve.cursor(x,vv*tr+vv*vv/(2*a),`${fmt(x,3)} km/klst → ${fmt(vv*tr+vv*vv/(2*a),3)} m`);};
+    curve.cursor(clamp(kmh,0,150),d1+d2,`${fmt(kmh,3)} km/klst → ${fmt(d1+d2,3)} m`);
+    const segs=[];if(tr>0)segs.push({a:0,dt:tr});segs.push({a:-a,dt:tb});
+    view.update(pieceModel(v0,segs));
+  }
+  ['s-v','s-tr','s-a'].forEach(id=>$('#'+id).addEventListener('input',run));
+  $('#s-surf').addEventListener('change',run);
+  const PR={thurrt:[90,0.8,'7.0'],halt:[90,0.8,'3.0'],baer:[50,0.8,'7.0'],sima:[90,2.0,'7.0']};
+  presetFns.stodvun=function(k){const q=PR[k];if(!q)return;setVal('s-v',q[0]);setVal('s-tr',q[1]);$('#s-surf').value=q[2];run();};
+  $$('[data-sp]').forEach(b=>b.addEventListener('click',()=>presetFns.stodvun(b.dataset.sp)));
+  calcInit.stodvun=function(){run();calcInit.stodvun=null;};
+})();
+
+/* ---------- 5. Hreyfing í hlutum ---------- */
+(function(){
+  let view=null,n=0;
+  const body=$('#p-rows');
+  function addRow(a,dt){n++;const tr=document.createElement('tr');tr.innerHTML=`<td class="ix"></td><td><input type="text" inputmode="decimal" id="pa-${n}" aria-label="Hröðun"></td><td><input type="text" inputmode="decimal" id="pt-${n}" aria-label="Tími"></td><td><button type="button" class="del" aria-label="Eyða kafla">×</button></td>`;
+    body.appendChild(tr);setVal('pa-'+n,a);setVal('pt-'+n,dt);
+    $$('input',tr).forEach(i=>i.addEventListener('input',run));
+    $('.del',tr).addEventListener('click',()=>{if(body.rows.length>1){tr.remove();run();}});}
+  function run(){
+    if(!view)view=Viewer($('#p-view'),{});
+    $$('tr',body).forEach((r,i)=>$('.ix',r).textContent=i+1);
+    const v0=parse($('#p-v0').value);const out=$('#p-out');
+    const segs=[];let bad=false;
+    $$('tr',body).forEach(r=>{const ins=$$('input',r);const a=parse(ins[0].value),dt=parse(ins[1].value);
+      ins[0].classList.toggle('bad',a==null||Number.isNaN(a));ins[1].classList.toggle('bad',dt==null||Number.isNaN(dt)||dt<=0);
+      if(a==null||Number.isNaN(a)||dt==null||Number.isNaN(dt)||dt<=0)bad=true;else segs.push({a,dt});});
+    if(v0==null||Number.isNaN(v0)||bad){out.innerHTML='<div class="msg">Fylltu inn upphafshraða og hröðun og jákvæðan tíma fyrir hvern kafla.</div>';view.update(null);return;}
+    const M=pieceModel(v0,segs);
+    let dist=0;const rows=M.segs.map((s,i)=>{const ve=s.v0+s.a*s.dt,dx=s.v0*s.dt+.5*s.a*s.dt*s.dt;let dd=Math.abs(dx);
+      if(s.a!==0&&s.v0*ve<0){const ts=-s.v0/s.a;const d1=s.v0*ts+.5*s.a*ts*ts;dd=Math.abs(d1)+Math.abs(dx-d1);}
+      dist+=dd;return {i:i+1,s,ve,dx,dd};});
+    const T=M.tEnd,DX=M.xEnd;
+    out.innerHTML=`<div class="stats" style="margin-bottom:14px">
+      <div class="stat hl"><div class="k">Færsla Δx</div><div class="v">${fmt(DX,3)} <small>m</small></div></div>
+      <div class="stat hl"><div class="k">Farin vegalengd</div><div class="v">${fmt(dist,3)} <small>m</small></div></div>
+      <div class="stat"><div class="k">Meðalhraði Δx/Δt</div><div class="v">${fmt(DX/T,3)} <small>m/s</small></div></div>
+      <div class="stat"><div class="k">Meðalferð</div><div class="v">${fmt(dist/T,3)} <small>m/s</small></div></div></div>
+      <div class="tbl-wrap"><table><thead><tr><th>#</th><th>v í byrjun</th><th>v í lok</th><th>Δx</th><th>farin</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${r.i}</td><td>${fmt(r.s.v0,3)} m/s</td><td>${fmt(r.ve,3)} m/s</td><td>${fmt(r.dx,3)} m</td><td>${fmt(r.dd,3)} m</td></tr>`).join('')}
+      </tbody></table></div>
+      <ol class="wsteps" style="margin-top:14px">
+       <li><div><div class="t">Hver kafli: jöfnur 1 og 2</div><div class="m"><var>v</var> = <var>v</var><sub>0</sub> + <var>a</var><var>Δt</var>, &nbsp;<var>Δx</var> = <var>v</var><sub>0</sub><var>Δt</var> + ½<var>a</var><var>Δt</var>²</div><div class="why">Lokahraði kaflans er upphafshraði þess næsta.</div></div></li>
+       <li><div><div class="t">Færsla = summa með formerkjum</div><div class="m">${rows.map(r=>p(r.dx)).join(' + ')} = <b>${fmt(DX)} m</b></div></div></li>
+       <li><div><div class="t">Farin vegalengd = summa án formerkja</div><div class="m">${rows.map(r=>fmt(r.dd)).join(' + ')} = <b>${fmt(dist)} m</b></div>${Math.abs(dist-Math.abs(DX))>1e-9?'<div class="why">Hluturinn snýr við, svo farin vegalengd er meiri en stærð færslunnar.</div>':''}</div></li>
+      </ol>`;
+    view.update(M);
+  }
+  $('#p-v0').addEventListener('input',run);
+  $('#p-add').addEventListener('click',()=>{addRow(0,5);run();});
+  const PR={s212:[0,[[2,10],[0,10],[-4,5]]],bolti:[9.8,[[-9.8,2]]],lest:[0,[[0.5,20],[0,60]]]};
+  presetFns.hlutar=function(k){const q=PR[k];if(!q)return;body.innerHTML='';setVal('p-v0',q[0]);q[1].forEach(s=>addRow(s[0],s[1]));run();};
+  $$('[data-pp]').forEach(b=>b.addEventListener('click',()=>presetFns.hlutar(b.dataset.pp)));
+  calcInit.hlutar=function(){if(!body.rows.length)presetFns.hlutar('s212');calcInit.hlutar=null;};
+})();
+
+/* ---------- theory viewer (2.12) ---------- */
+Viewer($('#th-view'),{}).update(pieceModel(0,[{a:2,dt:10},{a:0,dt:10},{a:-4,dt:5}]));
+
+/* ---------- checklist ---------- */
+$$('#checklist input').forEach(i=>{try{i.checked=localStorage.getItem('gf-'+i.id)==='1';}catch(e){}
+  i.addEventListener('change',()=>{try{localStorage.setItem('gf-'+i.id,i.checked?'1':'0');}catch(e){}});});
+
+/* ---------- initial route ---------- */
+(function(){
+  const h=(location.hash||'').slice(1);
+  if(CALCS.includes(h)){showTab('reiknivelar');showCalc(h);}
+  else if(SECS.includes(h))showSec(h);
+  else if(h==='formulur'||h==='reiknivelar'){showTab(h);if(h==='reiknivelar')showCalc('hradi');}
+  else showTab('yfirlit');
+})();
+})();
+</script>
+</body>
+</html>
